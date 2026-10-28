@@ -3,9 +3,10 @@ import {
   LuArrowRightLeft, LuCheck, LuCircleCheck, LuClock, LuCopy, LuFilePlus, LuIdCard, LuInfo,
   LuListChecks, LuLoaderCircle, LuPaperclip, LuRotateCcw, LuSearch, LuStepForward,
 } from "react-icons/lu";
-import { VEHICULES_DEMO, cleePlaque, findVehicule, textePlaque, type Plaque } from "../../data/demo";
+import { VEHICULES_DEMO, VEHICULES_USAGER, cleePlaque, findVehicule, textePlaque, type Plaque } from "../../data/demo";
 import { PlaqueInput, PlaqueMaroc } from "../PlaqueMaroc";
 import { useLocalState } from "../../hooks/useLocalState";
+import { useModeFinal } from "../../hooks/modeFinal";
 
 export type TypeDemande = "Duplicata" | "Mutation";
 export interface Dossier {
@@ -62,7 +63,7 @@ export function Demarches({ connecte, onVoirCarte }: { connecte: boolean; onVoir
     <div className="card" style={{ opacity: connecte ? 1 : 0.6, transition: "opacity .2s" }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 6 }}>
         <h3>Démarches en ligne</h3>
-        <span className="badge neutral">Prototype · rien n’est transmis</span>
+        {!useModeFinal() && <span className="badge neutral">Prototype · rien n’est transmis</span>}
       </div>
       {!connecte && (
         <div className="notice" style={{ margin: "10px 0 14px" }}><LuInfo /> Simulez d’abord la connexion à l’espace usager pour accéder aux démarches.</div>
@@ -97,15 +98,16 @@ export function Demarches({ connecte, onVoirCarte }: { connecte: boolean; onVoir
 }
 
 function MaCarte({ onVoirCarte }: { onVoirCarte: () => void }) {
+  const final = useModeFinal();
   return (
     <div style={{ display: "grid", gap: 12 }}>
-      {VEHICULES_DEMO.map((v) => (
+      {(final ? VEHICULES_USAGER : VEHICULES_DEMO).map((v) => (
         <div key={v.immatriculation} className="dossier-item" style={{ cursor: "default" }}>
           <span>
             <PlaqueMaroc plaque={v.plaque} size="sm" />
             <span className="small muted" style={{ display: "block", marginTop: 4 }}>{v.marque} · {v.modele}</span>
           </span>
-          {v.statut === "valide" ? <span className="badge">Exemple fictif</span> : <span className="badge amber">Signalé (scénario)</span>}
+          {v.statut === "valide" ? <span className="badge">{final ? "Valide" : "Exemple fictif"}</span> : <span className="badge amber">Signalé (scénario)</span>}
         </div>
       ))}
       <div><button className="btn secondary sm" type="button" onClick={onVoirCarte}>Afficher sur le smartphone</button></div>
@@ -124,10 +126,11 @@ function useSoumission() {
 }
 
 function Confirmation({ refDossier, onSuivi, onNouveau }: { refDossier: string; onSuivi: (r: string) => void; onNouveau: () => void }) {
+  const final = useModeFinal();
   return (
     <div className="notice success fade-in" role="status" style={{ display: "grid", gap: 10 }}>
-      <div style={{ display: "flex", gap: 10, alignItems: "center" }}><LuCircleCheck style={{ width: 22, height: 22 }} /><strong>Demande de démonstration enregistrée</strong></div>
-      <p>Référence fictive : <span className="mono" style={{ fontWeight: 600 }}>{refDossier}</span>. Aucune demande n’a été transmise à l’administration.</p>
+      <div style={{ display: "flex", gap: 10, alignItems: "center" }}><LuCircleCheck style={{ width: 22, height: 22 }} /><strong>{final ? "Demande enregistrée" : "Demande de démonstration enregistrée"}</strong></div>
+      {final ? <p>Votre référence : <span className="mono" style={{ fontWeight: 600 }}>{refDossier}</span>. Vous serez notifié à chaque étape du traitement.</p> : <p>Référence fictive : <span className="mono" style={{ fontWeight: 600 }}>{refDossier}</span>. Aucune demande n’a été transmise à l’administration.</p>}
       <div className="btn-row">
         <button className="btn sm" type="button" onClick={() => onSuivi(refDossier)}>Suivre ce dossier</button>
         <button className="btn ghost sm" type="button" onClick={onNouveau}>Nouvelle demande</button>
@@ -137,16 +140,20 @@ function Confirmation({ refDossier, onSuivi, onNouveau }: { refDossier: string; 
 }
 
 const PLAQUE_INITIALE: Plaque = { numero: "12345", lettre: "أ", region: "6" };
-function validerImmat(p: Plaque) {
+function validerImmat(p: Plaque, final = false) {
   if (!p.numero) return "Indiquez le numéro de la plaque.";
   if (!/^\d{1,5}$/.test(p.numero)) return "Le numéro comporte 1 à 5 chiffres.";
   const r = Number(p.region);
   if (!p.region || r < 1 || r > 89) return "Le code région est compris entre 1 et 89.";
-  if (!findVehicule(cleePlaque(p))) return "Plaque absente du jeu fictif. Utilisez 12345 | أ | 6 ou 67890 | ب | 1.";
+  const v = findVehicule(cleePlaque(p));
+  if (final) {
+    if (!v || !v.usager) return "Ce véhicule n’est pas associé à votre compte. Choisissez l’un de vos véhicules (onglet Ma carte grise).";
+  } else if (!v) return "Plaque absente du jeu fictif. Utilisez 12345 | أ | 6 ou 67890 | ب | 1.";
   return "";
 }
 
 function FormDuplicata({ onCree, onSuivi }: { onCree: (immat: string, detail: string) => string; onSuivi: (r: string) => void }) {
+  const final = useModeFinal();
   const [immat, setImmat] = useState<Plaque>(PLAQUE_INITIALE);
   const [motif, setMotif] = useState("");
   const [ok, setOk] = useState(false);
@@ -156,9 +163,9 @@ function FormDuplicata({ onCree, onSuivi }: { onCree: (immat: string, detail: st
   const submit = (e: FormEvent) => {
     e.preventDefault();
     const er: Record<string, string> = {};
-    const ei = validerImmat(immat); if (ei) er.immat = ei;
+    const ei = validerImmat(immat, final); if (ei) er.immat = ei;
     if (!motif) er.motif = "Choisissez un motif.";
-    if (!ok) er.ok = "Cochez la case pour confirmer qu’il s’agit d’une démonstration.";
+    if (!ok) er.ok = final ? "Cochez la case pour certifier les informations." : "Cochez la case pour confirmer qu’il s’agit d’une démonstration.";
     setErreurs(er);
     if (Object.keys(er).length) return;
     s.soumettre(() => onCree(textePlaque(immat), motif));
@@ -184,10 +191,10 @@ function FormDuplicata({ onCree, onSuivi }: { onCree: (immat: string, detail: st
         </select>
         {erreurs.motif && <span className="error-text">{erreurs.motif}</span>}
       </div>
-      <div className="notice"><LuPaperclip /> Pièces justificatives : non demandées dans le prototype.</div>
+      <div className="notice"><LuPaperclip /> {final ? "Pour un vol, la déclaration de vol vous sera demandée lors du traitement." : "Pièces justificatives : non demandées dans le prototype."}</div>
       <label className="check">
         <input id="dup-ok" type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} />
-        Je comprends qu’il s’agit d’une démonstration et qu’aucune demande n’est transmise.
+        {final ? "Je certifie l’exactitude des informations déclarées." : "Je comprends qu’il s’agit d’une démonstration et qu’aucune demande n’est transmise."}
       </label>
       {erreurs.ok && <span className="error-text">{erreurs.ok}</span>}
       <div><Bouton envoi={s.etat === "envoi"} label="Déposer la demande de duplicata" /></div>
@@ -196,6 +203,7 @@ function FormDuplicata({ onCree, onSuivi }: { onCree: (immat: string, detail: st
 }
 
 function FormMutation({ onCree, onSuivi }: { onCree: (immat: string, detail: string) => string; onSuivi: (r: string) => void }) {
+  const final = useModeFinal();
   const [immat, setImmat] = useState<Plaque>(PLAQUE_INITIALE);
   const [nom, setNom] = useState("");
   const [type, setType] = useState("");
@@ -208,13 +216,13 @@ function FormMutation({ onCree, onSuivi }: { onCree: (immat: string, detail: str
   const submit = (e: FormEvent) => {
     e.preventDefault();
     const er: Record<string, string> = {};
-    const ei = validerImmat(immat); if (ei) er.immat = ei;
+    const ei = validerImmat(immat, final); if (ei) er.immat = ei;
     if (nom.trim().length < 3) er.nom = "Indiquez un nom fictif d’au moins 3 caractères.";
     else if (/\d{5,}/.test(nom)) er.nom = "N’indiquez pas de numéro d’identité : utilisez un nom fictif.";
     if (!type) er.type = "Choisissez le type de cession.";
     if (!date) er.date = "Indiquez la date de cession.";
     else if (date > today) er.date = "La date de cession ne peut pas être dans le futur.";
-    if (!ok) er.ok = "Cochez la case pour confirmer qu’il s’agit d’une démonstration.";
+    if (!ok) er.ok = final ? "Cochez la case pour certifier les informations." : "Cochez la case pour confirmer qu’il s’agit d’une démonstration.";
     setErreurs(er);
     if (Object.keys(er).length) return;
     s.soumettre(() => onCree(textePlaque(immat), `${type} · nouveau titulaire : ${nom.trim()}`));
@@ -231,9 +239,9 @@ function FormMutation({ onCree, onSuivi }: { onCree: (immat: string, detail: str
         {erreurs.immat && <span className="error-text">{erreurs.immat}</span>}
       </div>
       <div className="field">
-        <label htmlFor="mut-nom">Nouveau titulaire (nom fictif)</label>
-        <input id="mut-nom" className="input" value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Exemple : Acquéreur fictif" aria-invalid={!!erreurs.nom} autoComplete="off" />
-        <span className="hint">N’indiquez aucune donnée personnelle réelle.</span>
+        <label htmlFor="mut-nom">{final ? "Nouveau titulaire" : "Nouveau titulaire (nom fictif)"}</label>
+        <input id="mut-nom" className="input" value={nom} onChange={(e) => setNom(e.target.value)} placeholder={final ? "Nom et prénom" : "Exemple : Acquéreur fictif"} aria-invalid={!!erreurs.nom} autoComplete="off" />
+        {!final && <span className="hint">N’indiquez aucune donnée personnelle réelle.</span>}
         {erreurs.nom && <span className="error-text">{erreurs.nom}</span>}
       </div>
       <div className="grid g-2">
@@ -255,7 +263,7 @@ function FormMutation({ onCree, onSuivi }: { onCree: (immat: string, detail: str
       </div>
       <label className="check">
         <input id="mut-ok" type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} />
-        Je comprends qu’il s’agit d’une démonstration et qu’aucune demande n’est transmise.
+        {final ? "Je certifie l’exactitude des informations déclarées." : "Je comprends qu’il s’agit d’une démonstration et qu’aucune demande n’est transmise."}
       </label>
       {erreurs.ok && <span className="error-text">{erreurs.ok}</span>}
       <div><Bouton envoi={s.etat === "envoi"} label="Déposer la demande de mutation" /></div>
@@ -278,6 +286,7 @@ function Suivi({ dossiers, selection, setSelection, maj, reinitialiser }: {
   maj: (ref: string, patch: Partial<Dossier>) => void;
   reinitialiser: () => void;
 }) {
+  const final = useModeFinal();
   const [recherche, setRecherche] = useState("");
   const [msg, setMsg] = useState("");
   const d = dossiers.find((x) => x.ref === selection) ?? dossiers[0];
@@ -286,7 +295,7 @@ function Suivi({ dossiers, selection, setSelection, maj, reinitialiser }: {
     e.preventDefault();
     const r = recherche.trim().toUpperCase();
     const f = dossiers.find((x) => x.ref === r);
-    if (f) { setSelection(f.ref); setMsg(""); } else setMsg("Aucun dossier de démonstration avec cette référence.");
+    if (f) { setSelection(f.ref); setMsg(""); } else setMsg("Aucun dossier avec cette référence.");
   };
 
   const copier = async (ref: string) => {
@@ -302,12 +311,12 @@ function Suivi({ dossiers, selection, setSelection, maj, reinitialiser }: {
       </form>
       {msg && <p className="small muted" role="status">{msg}</p>}
 
-      <div className="dossier-list" role="group" aria-label="Mes dossiers de démonstration">
+      <div className="dossier-list" role="group" aria-label="Mes dossiers">
         {dossiers.map((x) => (
           <button key={x.ref} type="button" className="dossier-item" aria-pressed={x.ref === d?.ref} onClick={() => setSelection(x.ref)}>
             <span style={{ minWidth: 0 }}>
               <strong className="mono">{x.ref}</strong>
-              <span className="small muted" style={{ display: "block" }}>{x.type} · {x.immatriculation}{x.exemple ? " · exemple" : ""}</span>
+              <span className="small muted" style={{ display: "block" }}>{x.type} · {x.immatriculation}{x.exemple && !final ? " · exemple" : ""}</span>
             </span>
             <span className={`badge ${x.etape === 4 ? "" : x.etape === 2 && !x.piecesTransmises ? "amber" : "neutral"}`}>{x.etape === 2 && x.piecesTransmises ? "Pièces reçues" : ETAPES_SUIVI[x.etape].court}</span>
           </button>
@@ -337,16 +346,16 @@ function Suivi({ dossiers, selection, setSelection, maj, reinitialiser }: {
           </ol>
           <div className="btn-row" style={{ marginTop: 16 }}>
             {d.etape === 2 && !d.piecesTransmises ? (
-              <button className="btn sm" type="button" onClick={() => maj(d.ref, { piecesTransmises: true })}><LuPaperclip /> Transmettre les pièces (démo)</button>
+              <button className="btn sm" type="button" onClick={() => maj(d.ref, { piecesTransmises: true })}><LuPaperclip /> Transmettre les pièces</button>
             ) : (
               <button className="btn sm" type="button" disabled={d.etape >= 4} onClick={() => maj(d.ref, { etape: d.etape + 1 })}><LuStepForward /> Étape suivante</button>
             )}
             <button className="btn ghost sm" type="button" onClick={() => maj(d.ref, { etape: 0, piecesTransmises: false })}><LuRotateCcw /> Revenir au début</button>
           </div>
-          {d.etape === 4 && <div className="notice success" style={{ marginTop: 14 }}><LuCircleCheck /> Document de démonstration disponible dans l’espace usager.</div>}
+          {d.etape === 4 && <div className="notice success" style={{ marginTop: 14 }}><LuCircleCheck /> Votre carte grise est disponible dans l’application.</div>}
         </div>
       )}
-      <div><button className="btn ghost sm" type="button" onClick={reinitialiser}>Effacer mes dossiers de démonstration</button></div>
+      <div><button className="btn ghost sm" type="button" onClick={reinitialiser}>Réinitialiser mes dossiers</button></div>
     </div>
   );
 }

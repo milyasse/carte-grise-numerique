@@ -10,7 +10,8 @@ import { Demarches } from "../components/demo/Demarches";
 import { LogoNarsa } from "../components/LogoNarsa";
 import { PlaqueMaroc } from "../components/PlaqueMaroc";
 import { QrCode } from "../components/QrCode";
-import { VEHICULES_DEMO, type ScenarioId } from "../data/demo";
+import { USAGER, VEHICULES_USAGER } from "../data/demo";
+import { ModeFinal } from "../hooks/modeFinal";
 import { QR_MATRICES } from "../data/qr";
 import { verificationService } from "../services/verification";
 
@@ -40,28 +41,28 @@ export function AppMobile({ onQuit }: { onQuit: () => void }) {
 
   useEffect(() => { scrollRef.current?.scrollTo({ top: 0 }); }, [ecran, vIdx]);
 
-  const v = VEHICULES_DEMO[vIdx];
-  const qrId: ScenarioId = v.statut === "signale" ? "signale" : "valide";
+  const v = VEHICULES_USAGER[vIdx];
   const ouvrirCarte = (i: number) => { setVIdx(i); setEcran("carte"); };
 
   return (
+    <ModeFinal.Provider value={true}>
     <div className="app-stage">
       <aside className="app-aside">
         <button className="btn ghost sm" type="button" onClick={onQuit}><LuArrowLeft /> Retour à la présentation</button>
         <div>
-          <span className="eyebrow">Démonstrateur</span>
+          <span className="eyebrow">Maquette de l’application</span>
           <h2 style={{ marginTop: 6 }}>Application Carte grise numérique</h2>
           <p className="muted" style={{ marginTop: 8 }}>
-            Parcourez l’application comme un usager : connexion, consultation de la carte grise, présentation du QR code,
-            démarches en ligne. L’onglet Contrôle montre la vue de l’agent.
+            Version cible de l’application : connexion par identité numérique, carte grise sur le téléphone,
+            QR code à présenter, duplicata et mutation en ligne. L’onglet Contrôle montre l’écran de l’agent.
           </p>
         </div>
-        <div className="notice warn"><LuInfo /> Données et vérifications fictives. Application non officielle, non connectée aux systèmes de la NARSA.</div>
+        <div className="notice warn"><LuInfo /> Maquette du projet. Personnes et véhicules fictifs. Application non officielle, non connectée aux systèmes de la NARSA.</div>
       </aside>
 
       <div className="app-device">
         <div className="app-shell">
-          <div className="app-demo-bar"><span>Démonstration · données fictives</span><button type="button" onClick={onQuit} aria-label="Quitter l’application"><LuX /></button></div>
+          <div className="app-demo-bar"><span>Maquette du projet · données fictives</span><button type="button" onClick={onQuit} aria-label="Quitter l’application"><LuX /></button></div>
 
           {phase === "splash" && (
             <div className="app-splash fade-in">
@@ -94,14 +95,14 @@ export function AppMobile({ onQuit }: { onQuit: () => void }) {
                 {ecran === "carte" && (
                   <div className="app-pad" style={{ display: "grid", gap: 12 }}>
                     <div className="chip-row" role="group" aria-label="Véhicule">
-                      {VEHICULES_DEMO.map((x, i) => (
+                      {VEHICULES_USAGER.map((x, i) => (
                         <button key={x.immatriculation} type="button" className="chip" aria-pressed={i === vIdx} onClick={() => setVIdx(i)}>
                           <PlaqueMaroc plaque={x.plaque} size="sm" />
                         </button>
                       ))}
                     </div>
                     <div className="app-card-frame">
-                      <CarteAvecActions vIdx={vIdx} qrId={qrId} onPresenter={() => setQrPlein(true)} onControle={() => setEcran("controle")} />
+                      <CarteAvecActions vIdx={vIdx} onPresenter={() => setQrPlein(true)} onControle={() => setEcran("controle")} />
                     </div>
                   </div>
                 )}
@@ -112,7 +113,7 @@ export function AppMobile({ onQuit }: { onQuit: () => void }) {
                 )}
                 {ecran === "controle" && (
                   <div className="app-pad">
-                    <AgentScanner initialScenario={qrId} />
+                    <AgentScanner initialScenario="valide" final />
                   </div>
                 )}
               </div>
@@ -132,8 +133,8 @@ export function AppMobile({ onQuit }: { onQuit: () => void }) {
                 <div className="app-qr-full fade-in" role="dialog" aria-modal="true" aria-label="Présenter le QR code">
                   <p className="small" style={{ opacity: 0.8 }}>Présentez ce QR code à l’agent</p>
                   <PlaqueMaroc plaque={v.plaque} />
-                  <div className="app-qr-big"><QrCode id={qrId} /></div>
-                  <p className="small" style={{ opacity: 0.8, textAlign: "center" }}>QR code de démonstration. Il ne prouve pas l’authenticité d’un document réel.</p>
+                  <div className="app-qr-big"><QrCode id={v.qrId} /></div>
+                  <p className="small" style={{ opacity: 0.8, textAlign: "center" }}>{v.titulaire} · {v.marque} {v.modele}</p>
                   <button className="btn" type="button" style={{ background: "#fff", color: "var(--c-primary-strong)" }} onClick={() => setQrPlein(false)}>Fermer</button>
                 </div>
               )}
@@ -142,6 +143,7 @@ export function AppMobile({ onQuit }: { onQuit: () => void }) {
         </div>
       </div>
     </div>
+    </ModeFinal.Provider>
   );
 }
 
@@ -155,7 +157,7 @@ function Connexion({ onOk }: { onOk: () => void }) {
     t.current.push(window.setTimeout(() => setEtape(3), 1700));
     t.current.push(window.setTimeout(onOk, 2300));
   };
-  const textes = ["", "Redirection vers le service d’identité…", "Authentification vérifiée (simulation)", "Ouverture de votre espace…"];
+  const textes = ["", "Connexion au service d’identité numérique…", "Identité vérifiée", "Ouverture de votre espace…"];
   return (
     <div className="app-login fade-in">
       <LogoNarsa size={48} />
@@ -167,7 +169,6 @@ function Connexion({ onOk }: { onOk: () => void }) {
         {etape > 0 ? <LuLoaderCircle className="spin" /> : <LuFingerprint />} Se connecter avec l’identité numérique
       </button>
       {etape > 0 && <p className="small" role="status" style={{ color: "var(--c-primary)", textAlign: "center" }}>{textes[etape]}</p>}
-      <div className="notice"><LuInfo /> Connexion simulée. Aucun identifiant ni mot de passe n’est demandé ou enregistré.</div>
     </div>
   );
 }
@@ -177,19 +178,19 @@ function Accueil({ onCarte, onGo }: { onCarte: (i: number) => void; onGo: (e: Ec
     <div className="app-pad" style={{ display: "grid", gap: 18 }}>
       <div>
         <p className="muted small">Bonjour,</p>
-        <h2 style={{ fontSize: "1.4rem" }}>Titulaire fictif A</h2>
+        <h2 style={{ fontSize: "1.4rem" }}>{USAGER.prenom}</h2>
       </div>
 
       <section style={{ display: "grid", gap: 10 }}>
         <h3 className="app-h">Mes véhicules</h3>
-        {VEHICULES_DEMO.map((v, i) => (
+        {VEHICULES_USAGER.map((v, i) => (
           <button key={v.immatriculation} type="button" className="app-veh" onClick={() => onCarte(i)}>
             <div style={{ display: "grid", gap: 8, justifyItems: "start", minWidth: 0 }}>
               <PlaqueMaroc plaque={v.plaque} size="sm" />
               <span className="small">{v.marque} · {v.modele}</span>
               {v.statut === "valide"
                 ? <span className="badge"><LuShieldCheck /> Carte grise disponible</span>
-                : <span className="badge amber">Titre signalé (scénario)</span>}
+                : <span className="badge amber">Titre signalé</span>}
             </div>
             <LuChevronRight />
           </button>
@@ -202,27 +203,28 @@ function Accueil({ onCarte, onGo }: { onCarte: (i: number) => void; onGo: (e: Ec
           <button type="button" onClick={() => onCarte(0)}><LuQrCode /><span>Présenter mon QR</span></button>
           <button type="button" onClick={() => onGo("demarches")}><LuFolderOpen /><span>Duplicata ou mutation</span></button>
           <button type="button" onClick={() => onGo("demarches")}><LuBell /><span>Suivre un dossier</span></button>
-          <button type="button" onClick={() => onGo("controle")}><LuScanLine /><span>Vue agent</span></button>
+          <button type="button" onClick={() => onGo("controle")}><LuScanLine /><span>Contrôle routier</span></button>
         </div>
       </section>
     </div>
   );
 }
 
-function CarteAvecActions({ vIdx, qrId, onPresenter, onControle }: { vIdx: number; qrId: ScenarioId; onPresenter: () => void; onControle: () => void }) {
+function CarteAvecActions({ vIdx, onPresenter, onControle }: { vIdx: number; onPresenter: () => void; onControle: () => void }) {
+  const v = VEHICULES_USAGER[vIdx];
   const [msg, setMsg] = useState("");
   useEffect(() => setMsg(""), [vIdx]);
   const verifier = async () => {
-    setMsg("Vérification simulée en cours…");
-    const r = await verificationService.verifier(QR_MATRICES[qrId].payload);
+    setMsg("Vérification en cours…");
+    const r = await verificationService.verifier(QR_MATRICES[v.qrId].payload);
     window.setTimeout(() => setMsg(
-      r.statut === "reconnu" ? "Vérification simulée réussie : document fictif reconnu."
-        : r.statut === "signale" ? "Document signalé dans le jeu fictif." : "Vérification non concluante.",
+      r.statut === "reconnu" ? "Titre valide et à jour."
+        : r.statut === "signale" ? "Titre signalé." : "Vérification non concluante.",
     ), 500);
   };
   return (
     <>
-      <CarteGriseMobile vehicule={VEHICULES_DEMO[vIdx]} qrId={qrId} onVerifier={verifier} onControle={onControle} verifMessage={msg} />
+      <CarteGriseMobile final vehicule={v} onVerifier={verifier} onControle={onControle} verifMessage={msg} />
       <div style={{ padding: "0 14px 14px" }}>
         <button className="btn secondary" type="button" style={{ width: "100%" }} onClick={onPresenter}><LuQrCode /> Afficher le QR en grand</button>
       </div>

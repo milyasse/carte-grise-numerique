@@ -494,3 +494,7 @@ table.rtable { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 .app-flat > .card { border: 0; padding: 0; background: transparent; }
 .app-shell .subtabs button { padding: 8px 8px; font-size: 0.88rem; }
 .app-veh .plaque-ma { justify-self: start; align-self: start; }
+.cg-status { display: inline-flex; align-items: center; gap: 5px; font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #fff; }
+.cg-status svg { width: 14px; height: 14px; }
+.cg-status.ok { color: var(--c-primary); }
+.cg-status.ko { color: var(--c-red); }

@@ -26,7 +26,7 @@ export function DemoPage({ onApp }: { onApp: () => void }) {
 
   const verifier = async () => {
     setVerif("Vérification simulée en cours…");
-    const r = await verificationService.verifier(QR_MATRICES[qrId].payload);
+    const r = await verificationService.verifier(QR_MATRICES[v.qrId].payload);
     window.setTimeout(() => {
       setVerif(
         r.statut === "reconnu"
@@ -69,7 +69,7 @@ export function DemoPage({ onApp }: { onApp: () => void }) {
                 ))}
               </div>
               <PhoneFrame label="Carte grise numérique de démonstration">
-                <CarteGriseMobile vehicule={v} qrId={qrId} onVerifier={verifier} onControle={controle} verifMessage={verif} />
+                <CarteGriseMobile vehicule={v} qrId={v.qrId} onVerifier={verifier} onControle={controle} verifMessage={verif} />
               </PhoneFrame>
             </div>
             <div style={{ display: "grid", gap: 20, minWidth: 0 }}>

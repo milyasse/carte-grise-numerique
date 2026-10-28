@@ -27,6 +27,8 @@ export const textePlaque = (p: Plaque) => `${p.numero} | ${p.lettre} | ${p.regio
 export interface VehiculeDemo {
   immatriculation: string; // clé technique
   plaque: Plaque;
+  qrId: string;
+  usager: boolean;
   marque: string;
   modele: string;
   genre: string;
@@ -45,35 +47,60 @@ export const VEHICULES_DEMO: VehiculeDemo[] = [
   {
     immatriculation: "12345-A-6",
     plaque: { numero: "12345", lettre: "أ", region: "6" },
-    marque: "Exemple Motors",
-    modele: "Véhicule de démonstration",
-    genre: "Véhicule particulier",
+    qrId: "valide",
+    usager: true,
+    marque: "Dacia",
+    modele: "Logan",
+    genre: "Voiture particulière",
     energie: "Diesel",
-    puissanceFiscale: "8 CV",
+    puissanceFiscale: "6 CV",
     couleur: "Gris",
     premiereCirculation: "15/03/2022",
-    numeroTitre: "CG-DEMO-000123",
+    numeroTitre: "CG-2026-000123",
     dateDelivrance: "02/01/2026",
-    titulaire: "Titulaire fictif A",
+    titulaire: "Youssef El Amrani",
     statut: "valide",
   },
   {
     immatriculation: "67890-B-1",
     plaque: { numero: "67890", lettre: "ب", region: "1" },
-    marque: "Exemple Motors",
-    modele: "Utilitaire de démonstration",
+    qrId: "signale",
+    usager: false,
+    marque: "Renault",
+    modele: "Kangoo",
     genre: "Véhicule utilitaire",
-    energie: "Essence",
-    puissanceFiscale: "6 CV",
+    energie: "Diesel",
+    puissanceFiscale: "7 CV",
     couleur: "Blanc",
     premiereCirculation: "09/11/2019",
-    numeroTitre: "CG-DEMO-000456",
+    numeroTitre: "CG-2024-000456",
     dateDelivrance: "18/06/2024",
-    titulaire: "Titulaire fictif B",
+    titulaire: "Karim Benali",
     statut: "signale",
-    motifSignalement: "Titre déclaré invalide dans le jeu de données fictif (scénario de test).",
+    motifSignalement: "Titre déclaré volé. Le document présenté ne doit pas être accepté.",
+  },
+  {
+    immatriculation: "24680-D-12",
+    plaque: { numero: "24680", lettre: "د", region: "12" },
+    qrId: "valide2",
+    usager: true,
+    marque: "Hyundai",
+    modele: "Tucson",
+    genre: "Voiture particulière",
+    energie: "Essence",
+    puissanceFiscale: "8 CV",
+    couleur: "Bleu nuit",
+    premiereCirculation: "21/07/2024",
+    numeroTitre: "CG-2024-000789",
+    dateDelivrance: "30/07/2024",
+    titulaire: "Youssef El Amrani",
+    statut: "valide",
   },
 ];
+
+/** Véhicules de l'usager connecté dans l'application. Personnes et véhicules fictifs. */
+export const VEHICULES_USAGER = VEHICULES_DEMO.filter((v) => v.usager);
+export const USAGER = { prenom: "Youssef", nom: "Youssef El Amrani" };
 
 export const QR_PREFIX = "CGN-DEMO:";
 

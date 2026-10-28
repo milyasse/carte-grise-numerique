@@ -1,23 +1,32 @@
-import { LuBadgeCheck, LuScanLine, LuShieldCheck } from "react-icons/lu";
+import { LuBadgeCheck, LuScanLine, LuShieldAlert, LuShieldCheck } from "react-icons/lu";
 import type { VehiculeDemo } from "../data/demo";
 import { QrCode } from "./QrCode";
 import { PlaqueMaroc } from "./PlaqueMaroc";
 
 interface Props {
   vehicule: VehiculeDemo;
-  qrId: "valide" | "signale" | "invalide";
+  qrId?: string;
   onVerifier?: () => void;
   onControle?: () => void;
   verifMessage?: string;
+  /** Apparence du produit final (sans mentions de démonstration dans la carte). */
+  final?: boolean;
 }
 
-export function CarteGriseMobile({ vehicule, qrId, onVerifier, onControle, verifMessage }: Props) {
+export function CarteGriseMobile({ vehicule, qrId, onVerifier, onControle, verifMessage, final = false }: Props) {
+  const valide = vehicule.statut === "valide";
   return (
     <>
       <div className="cg-head">
         <div className="cg-head-top">
           <h3>Carte grise numérique</h3>
-          <span className="badge amber" style={{ fontSize: "0.66rem" }}>Démonstration</span>
+          {final ? (
+            <span className={`cg-status ${valide ? "ok" : "ko"}`}>
+              {valide ? <LuShieldCheck /> : <LuShieldAlert />} {valide ? "Valide" : "Signalé"}
+            </span>
+          ) : (
+            <span className="badge amber" style={{ fontSize: "0.66rem" }}>Démonstration</span>
+          )}
         </div>
         <span className="ar" lang="ar">البطاقة الرمادية الرقمية</span>
       </div>
@@ -29,9 +38,11 @@ export function CarteGriseMobile({ vehicule, qrId, onVerifier, onControle, verif
           <dl className="kv">
             <dt>Marque</dt><dd>{vehicule.marque}</dd>
             <dt>Modèle</dt><dd>{vehicule.modele}</dd>
-            <dt>Type</dt><dd>{vehicule.genre}</dd>
+            <dt>Genre</dt><dd>{vehicule.genre}</dd>
             <dt>Énergie</dt><dd>{vehicule.energie}</dd>
-            <dt>Puissance</dt><dd>{vehicule.puissanceFiscale}</dd>
+            <dt>Puissance fiscale</dt><dd>{vehicule.puissanceFiscale}</dd>
+            {final && <><dt>Couleur</dt><dd>{vehicule.couleur}</dd></>}
+            {final && <><dt>1re mise en circulation</dt><dd className="mono">{vehicule.premiereCirculation}</dd></>}
           </dl>
         </div>
 
@@ -41,13 +52,20 @@ export function CarteGriseMobile({ vehicule, qrId, onVerifier, onControle, verif
             <dt>N° de titre</dt><dd className="mono">{vehicule.numeroTitre}</dd>
             <dt>Délivré le</dt><dd className="mono">{vehicule.dateDelivrance}</dd>
             <dt>Titulaire</dt><dd>{vehicule.titulaire}</dd>
-            <dt>Statut</dt><dd style={{ color: "var(--c-amber)" }}>Exemple fictif</dd>
+            <dt>Statut</dt>
+            {final
+              ? <dd style={{ color: valide ? "var(--c-primary)" : "var(--c-red)" }}>{valide ? "En circulation" : "Titre signalé"}</dd>
+              : <dd style={{ color: "var(--c-amber)" }}>Exemple fictif</dd>}
           </dl>
         </div>
 
         <div className="cg-block cg-qr">
-          <QrCode id={qrId} />
-          <p className="small muted">QR code de démonstration. Il ne certifie pas l’authenticité d’un document réel.</p>
+          <QrCode id={qrId ?? vehicule.qrId} />
+          <p className="small muted">
+            {final
+              ? "Présentez ce QR code à l’agent lors d’un contrôle routier."
+              : "QR code de démonstration. Il ne certifie pas l’authenticité d’un document réel."}
+          </p>
         </div>
 
         {(onVerifier || onControle) && (
@@ -59,7 +77,7 @@ export function CarteGriseMobile({ vehicule, qrId, onVerifier, onControle, verif
             )}
             {onControle && (
               <button className="btn sm secondary" type="button" onClick={onControle}>
-                <LuScanLine /> Simuler un contrôle routier
+                <LuScanLine /> {final ? "Vue contrôle routier" : "Simuler un contrôle routier"}
               </button>
             )}
             {verifMessage && (

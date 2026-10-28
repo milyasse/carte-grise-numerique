@@ -6,6 +6,13 @@ import { verificationService, type ResultatVerification } from "../../services/v
 import { QrCode } from "../QrCode";
 import { PlaqueMaroc } from "../PlaqueMaroc";
 
+const ETAPES_FINAL = [
+  "Lecture du QR code",
+  "Identification du titre",
+  "Consultation du registre",
+  "Résultat du contrôle",
+];
+
 const ETAPES = [
   "Lecture du QR code présenté",
   "Décodage de l’identifiant",
@@ -13,7 +20,7 @@ const ETAPES = [
   "Affichage du résultat",
 ];
 
-export function AgentScanner({ initialScenario = "valide" }: { initialScenario?: ScenarioId }) {
+export function AgentScanner({ initialScenario = "valide", final = false }: { initialScenario?: ScenarioId; final?: boolean }) {
   const [scenario, setScenario] = useState<ScenarioId>(initialScenario);
   const [manuel, setManuel] = useState("");
   const [etape, setEtape] = useState(-1); // -1 attente, 0..3 progression, 4 terminé
@@ -49,10 +56,10 @@ export function AgentScanner({ initialScenario = "valide" }: { initialScenario?:
     <div className="terminal">
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
         <div>
-          <h3>Terminal de contrôle · mode agent</h3>
-          <p className="muted small">Simulation. Aucune caméra n’est utilisée et aucune base nationale n’est interrogée.</p>
+          <h3>{final ? "Contrôle routier" : "Terminal de contrôle · mode agent"}</h3>
+          <p className="muted small">{final ? "Scannez le QR code présenté par le conducteur." : "Simulation. Aucune caméra n’est utilisée et aucune base nationale n’est interrogée."}</p>
         </div>
-        <span className="badge amber">Démonstration</span>
+        {!final && <span className="badge amber">Démonstration</span>}
       </div>
 
       <div role="group" aria-label="Scénario de test" className="chip-row">
@@ -66,7 +73,7 @@ export function AgentScanner({ initialScenario = "valide" }: { initialScenario?:
             title={s.description}
             disabled={enCours}
           >
-            {s.label}
+            {final ? LIBELLES_FINAL[s.id] : s.label}
           </button>
         ))}
       </div>
@@ -90,7 +97,7 @@ export function AgentScanner({ initialScenario = "valide" }: { initialScenario?:
           </div>
 
           <ol className="progress" aria-live="polite">
-            {ETAPES.map((e, i) => {
+            {(final ? ETAPES_FINAL : ETAPES).map((e, i) => {
               const cls = etape > i || etape === 4 ? "done" : etape === i ? "active" : "";
               return (
                 <li key={e} className={cls}>
@@ -103,8 +110,9 @@ export function AgentScanner({ initialScenario = "valide" }: { initialScenario?:
             })}
           </ol>
 
-          {resultat && <Resultat r={resultat} />}
+          {resultat && <Resultat r={resultat} final={final} />}
 
+          {!final && (
           <form
             className="manual"
             onSubmit={(e) => { e.preventDefault(); if (manuel.trim()) lancer(manuel); }}
@@ -115,25 +123,32 @@ export function AgentScanner({ initialScenario = "valide" }: { initialScenario?:
             <input id="qr-manuel" className="input mono" value={manuel} onChange={(e) => setManuel(e.target.value)} placeholder="CGN-DEMO:…" autoComplete="off" />
             <button className="btn secondary sm" type="submit" disabled={enCours || !manuel.trim()}>Tester</button>
           </form>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-function Resultat({ r }: { r: ResultatVerification }) {
+const LIBELLES_FINAL: Record<ScenarioId, string> = {
+  valide: "12345 | أ | 6",
+  signale: "67890 | ب | 1",
+  invalide: "QR non reconnu",
+};
+
+function Resultat({ r, final }: { r: ResultatVerification; final: boolean }) {
   if (r.statut === "reconnu") {
     const v = r.vehicule;
     return (
       <div className="result ok fade-in" role="status">
-        <div className="result-head"><LuCircleCheck /><div><strong>Vérification simulée réussie</strong><p className="small muted">Identifiant de démonstration reconnu, informations cohérentes avec le scénario de test.</p></div></div>
+        <div className="result-head"><LuCircleCheck /><div><strong>{final ? "Titre valide" : "Vérification simulée réussie"}</strong><p className="small muted">{final ? "Le titre est en règle. Les informations correspondent au véhicule." : "Identifiant de démonstration reconnu, informations cohérentes avec le scénario de test."}</p></div></div>
         <dl className="kv">
           <dt>Immatriculation</dt><dd><PlaqueMaroc plaque={v.plaque} size="sm" /></dd>
           <dt>Véhicule</dt><dd>{v.marque} · {v.modele}</dd>
           <dt>Type · énergie</dt><dd>{v.genre} · {v.energie}</dd>
           <dt>N° de titre</dt><dd className="mono">{v.numeroTitre}</dd>
         </dl>
-        <span className="status-stamp">DOCUMENT FICTIF DE DÉMONSTRATION</span>
+        {final ? <span className="status-stamp" style={{ color: "var(--c-primary)" }}>TITULAIRE : {v.titulaire.toUpperCase()}</span> : <span className="status-stamp">DOCUMENT FICTIF DE DÉMONSTRATION</span>}
       </div>
     );
   }
@@ -141,19 +156,19 @@ function Resultat({ r }: { r: ResultatVerification }) {
     const v = r.vehicule;
     return (
       <div className="result flag fade-in" role="status">
-        <div className="result-head"><LuTriangleAlert /><div><strong>Document signalé comme invalide</strong><p className="small muted">{r.motif}</p></div></div>
+        <div className="result-head"><LuTriangleAlert /><div><strong>{final ? "Titre signalé · ne pas accepter" : "Document signalé comme invalide"}</strong><p className="small muted">{r.motif}</p></div></div>
         <dl className="kv">
           <dt>Immatriculation</dt><dd><PlaqueMaroc plaque={v.plaque} size="sm" /></dd>
           <dt>N° de titre</dt><dd className="mono">{v.numeroTitre}</dd>
         </dl>
-        <p className="small">Conduite à tenir dans le scénario : appliquer la procédure prévue et orienter vers le service compétent.</p>
-        <span className="status-stamp">SCÉNARIO FICTIF · TITRE SIGNALÉ</span>
+        <p className="small">{final ? "Appliquer la procédure prévue et orienter vers le service compétent." : "Conduite à tenir dans le scénario : appliquer la procédure prévue et orienter vers le service compétent."}</p>
+        {!final && <span className="status-stamp">SCÉNARIO FICTIF · TITRE SIGNALÉ</span>}
       </div>
     );
   }
   return (
     <div className="result ko fade-in" role="status">
-      <div className="result-head"><LuCircleX /><div><strong>Vérification simulée échouée</strong><p className="small muted">{r.statut === "format" ? "Contenu du QR code non reconnu." : "Identifiant inconnu ou invalide."} Vérification non concluante.</p></div></div>
+      <div className="result-head"><LuCircleX /><div><strong>{final ? "QR code non reconnu" : "Vérification simulée échouée"}</strong><p className="small muted">{r.statut === "format" ? "Contenu du QR code non reconnu." : "Identifiant inconnu ou invalide."} Vérification non concluante.</p></div></div>
       <p className="small mono" style={{ overflowWrap: "anywhere" }}>Contenu lu : {r.contenu || "(vide)"}</p>
       <p className="small">Invitation à consulter le service compétent.</p>
     </div>

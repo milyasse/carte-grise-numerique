@@ -27,6 +27,7 @@ Le champ « Tester le contenu d’un QR code » du mode agent accepte n’import
 ## Design et animations
 
 - **Maquette Figma de la refonte v1** : https://www.figma.com/design/yB7heugApabyCh8Od6a5ek (variables de couleur NARSA, composants Logo, Plaque marocaine, Carte grise recto/verso, Navigation, et 6 écrans).
+- **Carte 3D** : `src/components/Carte3D.tsx`, d’après la page Figma « Carte 3D · motion » (couches en profondeur, reflet, bande holographique, épaisseur, retournement).
 - **Animations** : [GSAP](https://gsap.com/) (`src/hooks/useGsap.ts`) pour le démarrage, la connexion, l’accueil, les transitions d’écran et le retournement de la carte. Elles sont désactivées si l’appareil demande de réduire les animations.
 
 ## Installation locale

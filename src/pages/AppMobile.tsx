@@ -1,17 +1,18 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { IconType } from "react-icons";
 import {
   LuArrowLeft, LuArrowRightLeft, LuBell, LuChevronRight, LuCircleCheck, LuFilePlus, LuFingerprint, LuFolderOpen,
   LuHouse, LuIdCard, LuInfo, LuListChecks, LuLoaderCircle, LuLogOut, LuQrCode, LuRotateCw, LuScanLine,
-  LuShieldAlert, LuShieldCheck, LuSiren, LuX,
+  LuShieldCheck, LuSiren, LuX,
 } from "react-icons/lu";
 import { AgentScanner } from "../components/demo/AgentScanner";
 import { Demarches, ETAPES_SUIVI, type Dossier } from "../components/demo/Demarches";
 import { Marque } from "../components/Marque";
-import { gsap, useGsap } from "../hooks/useGsap";
+import { useGsap } from "../hooks/useGsap";
 import { PlaqueMaroc } from "../components/PlaqueMaroc";
 import { QrCode } from "../components/QrCode";
-import { Arc, Frise, Rosace, ZelligeFond } from "../components/MotifsMarocains";
+import { Rosace, ZelligeFond } from "../components/MotifsMarocains";
+import { Carte3D } from "../components/Carte3D";
 import { USAGER, VEHICULES_USAGER, type VehiculeDemo } from "../data/demo";
 import { QR_MATRICES } from "../data/qr";
 import { ModeFinal } from "../hooks/modeFinal";
@@ -223,95 +224,9 @@ function Connexion({ onOk }: { onOk: () => void }) {
   );
 }
 
-/**
- * Carte au format ID-1, recto : véhicule ; verso : QR code.
- * Le retournement se fait en deux demi-tours (0° → 90°, changement de face, -90° → 0°) :
- * une seule face est affichée à la fois, le texte n'apparaît donc jamais en miroir.
- */
+/** Carte grise 3D (voir components/Carte3D.tsx et la page Figma « Carte 3D · motion »). */
 function CarteNumerique({ v, flippable = false, retournee = false, onFlip }: { v: VehiculeDemo; flippable?: boolean; retournee?: boolean; onFlip?: () => void }) {
-  const valide = v.statut === "valide";
-  const [face, setFace] = useState(retournee);
-  const innerRef = useRef<HTMLSpanElement>(null);
-  const aRetourner = useRef(false);
-
-  useEffect(() => {
-    if (retournee === face) return;
-    const el = innerRef.current;
-    const reduit = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (!el || reduit) { setFace(retournee); return; }
-    const tw = gsap.to(el, {
-      rotationY: 90, transformPerspective: 1200, duration: 0.22, ease: "power2.in",
-      onComplete: () => { aRetourner.current = true; setFace(retournee); },
-    });
-    return () => { tw.kill(); };
-  }, [retournee, face]);
-
-  useLayoutEffect(() => {
-    if (!aRetourner.current || !innerRef.current) return;
-    aRetourner.current = false;
-    gsap.fromTo(innerRef.current, { rotationY: -90 }, { rotationY: 0, transformPerspective: 1200, duration: 0.42, ease: "back.out(1.7)" });
-  }, [face]);
-
-  const recto = (
-    <span className="dcard-face dcard-front mz-front">
-      <ZelligeFond />
-      <Rosace className="mz-rosace" />
-      <span className="dcard-sheen" aria-hidden="true" />
-      <span className="mz-head">
-        <span className="mz-fr">
-          <strong>Carte grise</strong>
-          <span>numérique</span>
-        </span>
-        <span className={`dcard-status ${valide ? "ok" : "ko"}`}>{valide ? <LuShieldCheck /> : <LuShieldAlert />}{valide ? "Valide" : "Signalé"}</span>
-        <span className="mz-ar" lang="ar">البطاقة الرمادية<br />الرقمية</span>
-      </span>
-      <Frise />
-      <span className="mz-arch-zone">
-        <Arc className="mz-arc" />
-        <span className="mz-plate"><PlaqueMaroc plaque={v.plaque} /></span>
-      </span>
-      <span className="dcard-row dcard-bottom">
-        <span>
-          <span className="dcard-label">Véhicule · <span lang="ar">المركبة</span></span>
-          <span className="dcard-val">{v.marque} {v.modele}</span>
-        </span>
-        <span style={{ textAlign: "right" }}>
-          <span className="dcard-label">N° de titre</span>
-          <span className="dcard-val mono">{v.numeroTitre}</span>
-        </span>
-      </span>
-    </span>
-  );
-  const verso = (
-    <span className="dcard-face dcard-back mz-back">
-      <ZelligeFond couleur="#124a8c" opacite={0.1} taille={30} />
-      <span className="mz-qr-arch">
-        <Arc className="mz-arc" couleur="#c9a227" />
-        <span className="dcard-qr"><QrCode id={v.qrId} /></span>
-      </span>
-      <span className="dcard-back-txt">
-        <span className="mz-ar dark" lang="ar">قدّم هذا الرمز لعون المراقبة</span>
-        <strong>{v.titulaire}</strong>
-        <span>Présentez ce QR code à l’agent</span>
-        <span className="mz-back-plate"><PlaqueMaroc plaque={v.plaque} size="sm" /></span>
-      </span>
-    </span>
-  );
-  const contenu = <span className="dcard-inner" ref={innerRef}>{face ? verso : recto}</span>;
-
-  if (flippable) {
-    return (
-      <button
-        type="button"
-        className="dcard flippable"
-        onClick={onFlip}
-        aria-label={retournee ? "Afficher le recto de la carte" : "Retourner la carte pour afficher le QR code"}
-      >
-        {contenu}
-      </button>
-    );
-  }
-  return <div className="dcard">{contenu}</div>;
+  return <Carte3D v={v} retournee={retournee} onFlip={flippable ? onFlip : undefined} flottante={flippable} entree={flippable} />;
 }
 
 function Accueil({ vIdx, setVIdx, onCarte, onGo, onQr, onLogout }: {

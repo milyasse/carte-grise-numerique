@@ -10,6 +10,7 @@ import { Demarches, ETAPES_SUIVI, type Dossier } from "../components/demo/Demarc
 import { LogoNarsa } from "../components/LogoNarsa";
 import { PlaqueMaroc } from "../components/PlaqueMaroc";
 import { QrCode } from "../components/QrCode";
+import { Arc, Frise, Rosace, ZelligeFond } from "../components/MotifsMarocains";
 import { USAGER, VEHICULES_USAGER, type VehiculeDemo } from "../data/demo";
 import { QR_MATRICES } from "../data/qr";
 import { ModeFinal } from "../hooks/modeFinal";
@@ -225,20 +226,26 @@ function CarteNumerique({ v, flippable = false, retournee = false, onFlip }: { v
   }, [stade]);
 
   const recto = (
-    <span className="dcard-face dcard-front">
-      <span className="dcard-pattern" aria-hidden="true" />
+    <span className="dcard-face dcard-front mz-front">
+      <ZelligeFond />
+      <Rosace className="mz-rosace" />
       <span className="dcard-sheen" aria-hidden="true" />
-      <span className="dcard-row">
-        <span className="dcard-brand">
-          <strong>Carte grise numérique</strong>
-          <span className="ar" lang="ar">البطاقة الرمادية</span>
+      <span className="mz-head">
+        <span className="mz-fr">
+          <strong>Carte grise</strong>
+          <span>numérique</span>
         </span>
         <span className={`dcard-status ${valide ? "ok" : "ko"}`}>{valide ? <LuShieldCheck /> : <LuShieldAlert />}{valide ? "Valide" : "Signalé"}</span>
+        <span className="mz-ar" lang="ar">البطاقة الرمادية<br />الرقمية</span>
       </span>
-      <span className="dcard-plate"><PlaqueMaroc plaque={v.plaque} /></span>
+      <Frise />
+      <span className="mz-arch-zone">
+        <Arc className="mz-arc" />
+        <span className="mz-plate"><PlaqueMaroc plaque={v.plaque} /></span>
+      </span>
       <span className="dcard-row dcard-bottom">
         <span>
-          <span className="dcard-label">Véhicule</span>
+          <span className="dcard-label">Véhicule · <span lang="ar">المركبة</span></span>
           <span className="dcard-val">{v.marque} {v.modele}</span>
         </span>
         <span style={{ textAlign: "right" }}>
@@ -249,11 +256,17 @@ function CarteNumerique({ v, flippable = false, retournee = false, onFlip }: { v
     </span>
   );
   const verso = (
-    <span className="dcard-face dcard-back">
-      <span className="dcard-qr"><QrCode id={v.qrId} /></span>
+    <span className="dcard-face dcard-back mz-back">
+      <ZelligeFond couleur="#124a8c" opacite={0.1} taille={30} />
+      <span className="mz-qr-arch">
+        <Arc className="mz-arc" couleur="#c9a227" />
+        <span className="dcard-qr"><QrCode id={v.qrId} /></span>
+      </span>
       <span className="dcard-back-txt">
+        <span className="mz-ar dark" lang="ar">قدّم هذا الرمز لعون المراقبة</span>
         <strong>{v.titulaire}</strong>
         <span>Présentez ce QR code à l’agent</span>
+        <span className="mz-back-plate"><PlaqueMaroc plaque={v.plaque} size="sm" /></span>
       </span>
     </span>
   );

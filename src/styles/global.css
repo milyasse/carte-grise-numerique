@@ -943,3 +943,35 @@ table.rtable { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
   .print-area, .print-area * { visibility: visible !important; }
   .print-area { position: fixed; inset: 0; margin: 12mm; box-shadow: none; }
 }
+
+/* ===== Carte grise : style marocain moderne ===== */
+.mz-fond { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.mz-front { background:
+  radial-gradient(120% 90% at 85% 0%, #1e78c0 0%, transparent 55%),
+  linear-gradient(150deg, #124a8c 0%, #0c3466 55%, #082548 100%) !important;
+  border: 1px solid rgba(249,197,34,.35); gap: 6px; }
+.mz-front::after { display: none; }
+.mz-front::before { content: ""; position: absolute; inset: 5px; border-radius: 16px; border: 1px solid rgba(249,197,34,.28); pointer-events: none; }
+.mz-rosace { position: absolute; width: 58%; right: -20%; bottom: -34%; opacity: .22; animation: rosace 60s linear infinite; pointer-events: none; }
+@keyframes rosace { to { transform: rotate(360deg); } }
+.mz-head { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px; }
+.mz-fr { display: grid; line-height: 1.05; }
+.mz-fr strong { font-family: var(--f-display); font-size: 0.98rem; letter-spacing: .02em; }
+.mz-fr span { font-size: 0.66rem; letter-spacing: .22em; text-transform: uppercase; color: #f9c522; }
+.mz-ar { font-family: "Noto Kufi Arabic", var(--f-display); font-size: 0.72rem; line-height: 1.35; text-align: right; direction: rtl; color: #e7eef8; font-weight: 700; }
+.mz-ar.dark { color: var(--c-primary-strong); text-align: left; direction: rtl; font-size: 0.8rem; }
+.mz-head .dcard-status { justify-self: center; }
+.mz-frise { position: relative; z-index: 1; display: block; width: 100%; height: 9px; }
+.mz-arch-zone { position: relative; z-index: 1; flex: 1; display: grid; place-items: center; min-height: 0; }
+.mz-arc { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mz-plate { position: relative; padding-top: 10px; }
+.mz-plate .plaque-ma { font-size: 1.12rem; box-shadow: 0 8px 18px -8px rgba(0,0,0,.6); }
+.mz-front .dcard-label { color: #f3d77a; }
+.mz-back { background: linear-gradient(160deg, #fbf6ea 0%, #f4ead2 100%) !important; border: 1px solid #e3d3a6; }
+.mz-back::before { content: ""; position: absolute; inset: 5px; border-radius: 16px; border: 1px solid rgba(201,162,39,.45); pointer-events: none; }
+.mz-qr-arch { position: relative; z-index: 1; width: 46%; flex: none; aspect-ratio: .86; display: grid; place-items: end center; padding-bottom: 6%; }
+.mz-qr-arch .mz-arc { inset: 0; }
+.mz-qr-arch .dcard-qr { width: 78%; }
+.mz-qr-arch .qr { border-radius: 6px; }
+.mz-back .dcard-back-txt { position: relative; z-index: 1; }
+.mz-back-plate { margin-top: 2px; }

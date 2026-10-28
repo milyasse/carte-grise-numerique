@@ -13,7 +13,7 @@ import { QR_MATRICES } from "../data/qr";
 
 type Mode = "usager" | "agent";
 
-export function DemoPage() {
+export function DemoPage({ onApp }: { onApp: () => void }) {
   const [mode, setMode] = useState<Mode>("usager");
   const [vIdx, setVIdx] = useState(0);
   const [connecte, setConnecte] = useState(false);
@@ -55,6 +55,7 @@ export function DemoPage() {
             <button type="button" aria-pressed={mode === "usager"} onClick={() => setMode("usager")}><LuSmartphone /> Mode usager</button>
             <button type="button" aria-pressed={mode === "agent"} onClick={() => setMode("agent")}><LuSiren /> Mode agent</button>
           </div>
+          <button className="btn" type="button" onClick={onApp}><LuSmartphone /> Ouvrir l’application</button>
         </div>
 
         {mode === "usager" ? (

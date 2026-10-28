@@ -2,14 +2,15 @@ import { LuInfo, LuLayoutGrid, LuRoute, LuSmartphone } from "react-icons/lu";
 import { LogoNarsa } from "./components/LogoNarsa";
 import { DISCLAIMER } from "./data/project";
 import { useHashTab } from "./hooks/useHashTab";
+import { AppMobile } from "./pages/AppMobile";
 import { DemoPage } from "./pages/DemoPage";
 import { ParcoursPage } from "./pages/ParcoursPage";
 import { VisionPage } from "./pages/VisionPage";
 
-const TABS = ["vision", "demonstrateur", "parcours"] as const;
-type Tab = (typeof TABS)[number];
+const TABS = ["vision", "demonstrateur", "parcours", "application"] as const;
+const NAV_TABS = ["vision", "demonstrateur", "parcours"] as const;
 
-const LABELS: Record<Tab, { label: string; icon: typeof LuLayoutGrid }> = {
+const LABELS: Record<(typeof NAV_TABS)[number], { label: string; icon: typeof LuLayoutGrid }> = {
   vision: { label: "Vision du projet", icon: LuLayoutGrid },
   demonstrateur: { label: "Démonstrateur", icon: LuSmartphone },
   parcours: { label: "Parcours usager", icon: LuRoute },
@@ -17,6 +18,8 @@ const LABELS: Record<Tab, { label: string; icon: typeof LuLayoutGrid }> = {
 
 export default function App() {
   const [tab, go] = useHashTab(TABS, "vision");
+
+  if (tab === "application") return <AppMobile onQuit={() => go("vision")} />;
 
   return (
     <>
@@ -38,7 +41,7 @@ export default function App() {
         </div>
         <div className="tabs-row">
           <nav className="container tabs" role="tablist" aria-label="Sections de l’application">
-            {TABS.map((t) => {
+            {NAV_TABS.map((t) => {
               const I = LABELS[t].icon;
               return (
                 <button
@@ -60,8 +63,8 @@ export default function App() {
       </header>
 
       <main id="contenu" role="tabpanel" aria-labelledby={`tab-${tab}`}>
-        {tab === "vision" && <VisionPage onDemo={() => go("demonstrateur")} />}
-        {tab === "demonstrateur" && <DemoPage />}
+        {tab === "vision" && <VisionPage onDemo={() => go("application")} />}
+        {tab === "demonstrateur" && <DemoPage onApp={() => go("application")} />}
         {tab === "parcours" && <ParcoursPage />}
       </main>
 

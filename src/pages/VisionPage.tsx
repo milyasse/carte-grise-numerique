@@ -25,7 +25,7 @@ export function VisionPage({ onDemo }: { onDemo: () => void }) {
               l’authenticité par QR code lors des contrôles, et de réaliser en ligne les démarches de duplicata et de mutation.
             </p>
             <div className="btn-row">
-              <button className="btn" type="button" onClick={onDemo}>Ouvrir le démonstrateur <LuArrowRight /></button>
+              <button className="btn" type="button" onClick={onDemo}>Ouvrir l’application <LuArrowRight /></button>
               <a className="btn secondary" href="#parcours">Voir le parcours usager</a>
             </div>
           </div>

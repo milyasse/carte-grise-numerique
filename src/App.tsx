@@ -3,11 +3,12 @@ import { LogoNarsa } from "./components/LogoNarsa";
 import { DISCLAIMER } from "./data/project";
 import { useHashTab } from "./hooks/useHashTab";
 import { AppMobile } from "./pages/AppMobile";
+import { AppV2 } from "./pages/AppV2";
 import { DemoPage } from "./pages/DemoPage";
 import { ParcoursPage } from "./pages/ParcoursPage";
 import { VisionPage } from "./pages/VisionPage";
 
-const TABS = ["vision", "demonstrateur", "parcours", "application"] as const;
+const TABS = ["vision", "demonstrateur", "parcours", "application", "application-v2"] as const;
 const NAV_TABS = ["vision", "demonstrateur", "parcours"] as const;
 
 const LABELS: Record<(typeof NAV_TABS)[number], { label: string; icon: typeof LuLayoutGrid }> = {
@@ -20,6 +21,7 @@ export default function App() {
   const [tab, go] = useHashTab(TABS, "vision");
 
   if (tab === "application") return <AppMobile onQuit={() => go("vision")} />;
+  if (tab === "application-v2") return <AppV2 onQuit={() => go("vision")} onV1={() => go("application")} />;
 
   return (
     <>
@@ -63,8 +65,8 @@ export default function App() {
       </header>
 
       <main id="contenu" role="tabpanel" aria-labelledby={`tab-${tab}`}>
-        {tab === "vision" && <VisionPage onDemo={() => go("application")} />}
-        {tab === "demonstrateur" && <DemoPage onApp={() => go("application")} />}
+        {tab === "vision" && <VisionPage onDemo={() => go("application-v2")} onV1={() => go("application")} />}
+        {tab === "demonstrateur" && <DemoPage onApp={() => go("application-v2")} />}
         {tab === "parcours" && <ParcoursPage />}
       </main>
 

@@ -11,6 +11,7 @@ Prototype réalisé dans le cadre d’une formation en conduite du changement.
 |---|---|
 | **Vision du projet** | Contexte, défis, comparaison Aujourd’hui / Demain, objectifs, résultats attendus (non chiffrés), acteurs concernés. |
 | **Démonstrateur** | Carte grise sur smartphone, QR code scannable, mode usager (connexion simulée, duplicata, mutation, suivi de dossier) et mode agent (contrôle routier simulé, 3 scénarios). |
+| **Application v2** (`#application-v2`) | Maquette « Ma carte grise numérique » : accueil, carte grise compacte et détaillée, vérification par QR, démarches, documents, profil, menu latéral, charte graphique. La v1 reste disponible (`#application`). |
 | **Parcours usager** | Parcours actuel et cible, tableau filtrable des résistances et leviers, tableau d’indicateurs à compléter. |
 
 ### Scénarios de vérification

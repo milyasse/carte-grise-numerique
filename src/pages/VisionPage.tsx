@@ -7,7 +7,7 @@ import { SectionHead } from "../components/SectionHead";
 import { VEHICULES_DEMO } from "../data/demo";
 import { AUJOURDHUI, DEFIS, DEMAIN, ECOSYSTEME, OBJECTIFS, RESULTATS, SITUATION_ACTUELLE } from "../data/project";
 
-export function VisionPage({ onDemo }: { onDemo: () => void }) {
+export function VisionPage({ onDemo, onV1 }: { onDemo: () => void; onV1: () => void }) {
   return (
     <>
       <section className="hero">
@@ -26,7 +26,8 @@ export function VisionPage({ onDemo }: { onDemo: () => void }) {
             </p>
             <div className="btn-row">
               <button className="btn" type="button" onClick={onDemo}>Ouvrir l’application <LuArrowRight /></button>
-              <a className="btn secondary" href="#parcours">Voir le parcours usager</a>
+              <button className="btn secondary" type="button" onClick={onV1}>Application version 1</button>
+              <a className="btn ghost" href="#parcours">Voir le parcours usager</a>
             </div>
           </div>
           <div className="hero-visual">

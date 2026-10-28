@@ -24,6 +24,11 @@ Prototype réalisé dans le cadre d’une formation en conduite du changement.
 
 Le champ « Tester le contenu d’un QR code » du mode agent accepte n’importe quel texte.
 
+## Design et animations
+
+- **Maquette Figma de la refonte v1** : https://www.figma.com/design/yB7heugApabyCh8Od6a5ek (variables de couleur NARSA, composants Logo, Plaque marocaine, Carte grise recto/verso, Navigation, et 6 écrans).
+- **Animations** : [GSAP](https://gsap.com/) (`src/hooks/useGsap.ts`) pour le démarrage, la connexion, l’accueil, les transitions d’écran et le retournement de la carte. Elles sont désactivées si l’appareil demande de réduire les animations.
+
 ## Installation locale
 
 ```bash

@@ -9,6 +9,7 @@ import {
 } from "react-icons/lu";
 import { Demarches } from "../components/demo/Demarches";
 import { QrCode } from "../components/QrCode";
+import { Marque } from "../components/Marque";
 import { textePlaque, type Plaque } from "../data/demo";
 import { QR_MATRICES } from "../data/qr";
 import { ModeFinal } from "../hooks/modeFinal";
@@ -141,15 +142,6 @@ export function AppV2({ onQuit, onV1 }: { onQuit: () => void; onV1: () => void }
 }
 
 /* ---------- Éléments communs ---------- */
-
-function Marque({ clair = false }: { clair?: boolean }) {
-  return (
-    <div className={`v2-marque ${clair ? "clair" : ""}`}>
-      <svg viewBox="0 0 48 32" aria-hidden="true"><path d="M2 30 L26 4 L34 4 L12 30 Z" fill="currentColor" opacity=".9" /><path d="M16 30 L36 8 L44 8 L26 30 Z" fill="#f9c522" /></svg>
-      <span><strong>Carte grise</strong><small>numérique · NARSA</small></span>
-    </div>
-  );
-}
 
 function PlaqueTexte({ p }: { p: Plaque }) {
   return <span className="v2-plaque" dir="ltr">{p.numero}<i>|</i><b lang="ar">{p.lettre}</b><i>|</i>{p.region}</span>;

@@ -975,3 +975,30 @@ table.rtable { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 .mz-qr-arch .qr { border-radius: 6px; }
 .mz-back .dcard-back-txt { position: relative; z-index: 1; }
 .mz-back-plate { margin-top: 2px; }
+
+/* ===== Refonte v1 (maquette Figma) : logo + animations GSAP ===== */
+.gsap-on .screen-in, .gsap-on .wallet-slot, .gsap-on .quick-btn, .gsap-on .act-item, .gsap-on .login-features li,
+.gsap-on .login-hero h2, .gsap-on .login-hero p, .gsap-on .splash-mark, .gsap-on .splash-title, .gsap-on .splash-ar,
+.gsap-on .splash-rings span, .gsap-on .splash-bar span, .gsap-on .finger.ok { animation: none; }
+.gsap-on .dcard-inner { transition: none; transform: none; }
+.logo-pill { display: inline-flex; align-items: center; background: #fff; border-radius: 14px; padding: 8px 12px; box-shadow: 0 8px 20px -12px rgba(0,0,0,.4); justify-self: start; }
+.v2-marque.compact svg { width: 32px; height: 22px; }
+.v2-marque.compact strong { font-size: 0.95rem; }
+.v2-marque.compact small { font-size: 0.58rem; }
+.home-brand { position: relative; display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.home-brand .logo-pill { margin-right: auto; padding: 6px 10px; }
+.app-splash2 .mz-fond { opacity: 1; }
+.splash-rosace { position: absolute; width: 140%; left: -20%; top: 18%; opacity: .08; pointer-events: none; }
+.splash-ring { position: absolute; width: 170px; height: 170px; border-radius: 50%; border: 1.5px solid rgba(249,197,34,.45); }
+.splash-tile { position: relative; z-index: 1; background: #fff; border-radius: 30px; padding: 22px 20px; box-shadow: 0 24px 50px -20px rgba(0,0,0,.55); }
+.splash-tile .v2-marque svg { width: 46px; height: 31px; }
+.splash-title { display: grid; overflow: hidden; position: relative; z-index: 1; }
+.splash-title .ln { display: block; }
+.splash-ar { position: relative; z-index: 1; color: #f9c522 !important; font-family: "Noto Kufi Arabic", var(--f-display); }
+.splash-bar { position: relative; z-index: 1; transform-origin: center; }
+.login-hero .logo-pill { margin-bottom: 6px; }
+/* GSAP anime transform : pas de transition CSS concurrente sur les éléments animés */
+.gsap-on .finger { transition: background .3s, color .3s; }
+.gsap-on .act-item { transition: border-color .2s; }
+.gsap-on .finger:hover:not(:disabled) { transform: none; }
+.gsap-on .act-item:hover { transform: none; }

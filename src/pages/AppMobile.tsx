@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { IconType } from "react-icons";
 import {
   LuArrowLeft, LuArrowRightLeft, LuBell, LuChevronRight, LuCircleCheck, LuFilePlus, LuFingerprint, LuFolderOpen,
@@ -7,7 +7,8 @@ import {
 } from "react-icons/lu";
 import { AgentScanner } from "../components/demo/AgentScanner";
 import { Demarches, ETAPES_SUIVI, type Dossier } from "../components/demo/Demarches";
-import { LogoNarsa } from "../components/LogoNarsa";
+import { Marque } from "../components/Marque";
+import { gsap, useGsap } from "../hooks/useGsap";
 import { PlaqueMaroc } from "../components/PlaqueMaroc";
 import { QrCode } from "../components/QrCode";
 import { Arc, Frise, Rosace, ZelligeFond } from "../components/MotifsMarocains";
@@ -40,7 +41,7 @@ export function AppMobile({ onQuit }: { onQuit: () => void }) {
 
   useEffect(() => {
     if (phase !== "splash") return;
-    const t = window.setTimeout(() => setPhase("connexion"), 2100);
+    const t = window.setTimeout(() => setPhase("connexion"), 2700);
     return () => clearTimeout(t);
   }, [phase]);
 
@@ -51,12 +52,16 @@ export function AppMobile({ onQuit }: { onQuit: () => void }) {
     return () => clearTimeout(t);
   }, [toast]);
 
+  useGsap(scrollRef, ({ gsap }) => {
+    gsap.from(".screen-in", { y: 22, autoAlpha: 0, duration: 0.45, ease: "power3.out" });
+  }, [ecran, phase]);
+
   const v = VEHICULES_USAGER[vIdx];
   const ouvrirCarte = (i: number) => { setVIdx(i); setEcran("carte"); };
 
   return (
     <ModeFinal.Provider value={true}>
-      <div className="app-stage">
+      <div className="app-stage gsap-on">
         <aside className="app-aside">
           <button className="btn ghost sm" type="button" onClick={onQuit}><LuArrowLeft /> Retour à la présentation</button>
           <div>
@@ -146,11 +151,24 @@ function NavBtn({ n, actif, onClick }: { n: (typeof NAV)[number]; actif: boolean
 }
 
 function Splash() {
+  const ref = useRef<HTMLDivElement>(null);
+  useGsap(ref, ({ gsap }) => {
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    tl.from(".splash-tile", { scale: 0.3, autoAlpha: 0, rotation: -14, duration: 0.8, ease: "back.out(1.8)" })
+      .from(".splash-title .ln", { yPercent: 110, autoAlpha: 0, stagger: 0.1, duration: 0.6 }, "-=0.3")
+      .from(".splash-ar", { autoAlpha: 0, y: 12, duration: 0.45 }, "-=0.3")
+      .from(".splash-bar", { autoAlpha: 0, scaleX: 0.2, duration: 0.35 }, "-=0.2")
+      .fromTo(".splash-bar span", { xPercent: -110 }, { xPercent: 260, duration: 1, repeat: -1, ease: "sine.inOut" }, "<");
+    gsap.fromTo(".splash-ring", { scale: 0.5, autoAlpha: 0.9 }, { scale: 2.8, autoAlpha: 0, duration: 2.4, ease: "power1.out", stagger: { each: 0.7, repeat: -1 } });
+    gsap.to(".splash-rosace", { rotation: 360, duration: 40, repeat: -1, ease: "none" });
+  });
   return (
-    <div className="app-splash2">
-      <div className="splash-rings" aria-hidden="true"><span /><span /><span /></div>
-      <div className="splash-mark"><LuIdCard /></div>
-      <h1 className="splash-title">Carte grise<br />numérique</h1>
+    <div className="app-splash2" ref={ref}>
+      <ZelligeFond opacite={0.14} />
+      <Rosace className="splash-rosace" />
+      <div className="splash-rings" aria-hidden="true"><span className="splash-ring" /><span className="splash-ring" /><span className="splash-ring" /></div>
+      <div className="splash-tile"><Marque /></div>
+      <h1 className="splash-title"><span className="ln">Carte grise</span><span className="ln">numérique</span></h1>
       <p className="ar splash-ar" lang="ar">البطاقة الرمادية الرقمية</p>
       <div className="splash-bar" aria-hidden="true"><span /></div>
     </div>
@@ -168,11 +186,20 @@ function Connexion({ onOk }: { onOk: () => void }) {
     t.current.push(window.setTimeout(onOk, 2400));
   };
   const textes = ["Touchez pour vous identifier", "Connexion au service d’identité numérique…", "Identité vérifiée", "Ouverture de votre espace…"];
+  const ref = useRef<HTMLDivElement>(null);
+  useGsap(ref, ({ gsap }) => {
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    tl.from(".login-hero", { yPercent: -18, autoAlpha: 0, duration: 0.6 })
+      .from(".login-hero .logo-pill, .login-hero h2, .login-hero p", { y: 18, autoAlpha: 0, stagger: 0.08, duration: 0.5 }, "-=0.25")
+      .from(".finger", { scale: 0, duration: 0.7, ease: "elastic.out(1, 0.55)" }, "-=0.2")
+      .from(".login-state, .login-body > .btn", { y: 14, autoAlpha: 0, stagger: 0.08, duration: 0.4 }, "-=0.4")
+      .from(".login-features li", { x: -24, autoAlpha: 0, stagger: 0.09, duration: 0.45 }, "-=0.2");
+  });
   return (
-    <div className="app-login2">
+    <div className="app-login2" ref={ref}>
       <div className="login-hero">
         <div className="login-pattern" aria-hidden="true" />
-        <LogoNarsa size={40} variant="light" />
+        <div className="logo-pill"><Marque /></div>
         <h2>Bienvenue</h2>
         <p>Votre carte grise et vos démarches, au même endroit.</p>
       </div>
@@ -204,26 +231,26 @@ function Connexion({ onOk }: { onOk: () => void }) {
 function CarteNumerique({ v, flippable = false, retournee = false, onFlip }: { v: VehiculeDemo; flippable?: boolean; retournee?: boolean; onFlip?: () => void }) {
   const valide = v.statut === "valide";
   const [face, setFace] = useState(retournee);
-  const [stade, setStade] = useState<"repos" | "sortie" | "entree">("repos");
+  const innerRef = useRef<HTMLSpanElement>(null);
+  const aRetourner = useRef(false);
 
   useEffect(() => {
     if (retournee === face) return;
+    const el = innerRef.current;
     const reduit = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (reduit) { setFace(retournee); return; }
-    setStade("sortie");
-    const t = window.setTimeout(() => {
-      setFace(retournee);
-      setStade("entree");
-    }, 230);
-    return () => clearTimeout(t);
+    if (!el || reduit) { setFace(retournee); return; }
+    const tw = gsap.to(el, {
+      rotationY: 90, transformPerspective: 1200, duration: 0.22, ease: "power2.in",
+      onComplete: () => { aRetourner.current = true; setFace(retournee); },
+    });
+    return () => { tw.kill(); };
   }, [retournee, face]);
 
-  useEffect(() => {
-    if (stade !== "entree") return;
-    let r2 = 0;
-    const r1 = requestAnimationFrame(() => { r2 = requestAnimationFrame(() => setStade("repos")); });
-    return () => { cancelAnimationFrame(r1); cancelAnimationFrame(r2); };
-  }, [stade]);
+  useLayoutEffect(() => {
+    if (!aRetourner.current || !innerRef.current) return;
+    aRetourner.current = false;
+    gsap.fromTo(innerRef.current, { rotationY: -90 }, { rotationY: 0, transformPerspective: 1200, duration: 0.42, ease: "back.out(1.7)" });
+  }, [face]);
 
   const recto = (
     <span className="dcard-face dcard-front mz-front">
@@ -270,7 +297,7 @@ function CarteNumerique({ v, flippable = false, retournee = false, onFlip }: { v
       </span>
     </span>
   );
-  const contenu = <span className={`dcard-inner stade-${stade}`}>{face ? verso : recto}</span>;
+  const contenu = <span className="dcard-inner" ref={innerRef}>{face ? verso : recto}</span>;
 
   if (flippable) {
     return (
@@ -310,6 +337,17 @@ function Accueil({ vIdx, setVIdx, onCarte, onGo, onQr, onLogout }: {
     setVIdx(i);
   };
 
+  const homeRef = useRef<HTMLDivElement>(null);
+  useGsap(homeRef, ({ gsap }) => {
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    tl.from(".home-brand > *", { y: -16, autoAlpha: 0, stagger: 0.06, duration: 0.45 })
+      .from(".home-top, .home-sub", { y: 14, autoAlpha: 0, stagger: 0.08, duration: 0.45 }, "-=0.25")
+      .from(".wallet-slot", { y: 70, rotationX: -28, transformPerspective: 900, transformOrigin: "50% 100%", autoAlpha: 0, stagger: 0.12, duration: 0.85 }, "-=0.25")
+      .from(".wallet-dots", { autoAlpha: 0, duration: 0.3 }, "-=0.4")
+      .from(".quick-btn", { scale: 0.5, autoAlpha: 0, stagger: 0.06, duration: 0.5, ease: "back.out(2)" }, "-=0.45")
+      .from(".act-item", { x: 30, autoAlpha: 0, stagger: 0.08, duration: 0.45 }, "-=0.3");
+  });
+
   const ACTIONS: { icon: IconType; label: string; tone: string; onClick: () => void }[] = [
     { icon: LuQrCode, label: "Mon QR code", tone: "t1", onClick: onQr },
     { icon: LuFilePlus, label: "Duplicata", tone: "t2", onClick: () => onGo("demarches") },
@@ -318,17 +356,20 @@ function Accueil({ vIdx, setVIdx, onCarte, onGo, onQr, onLogout }: {
   ];
 
   return (
-    <div className="home">
+    <div className="home" ref={homeRef}>
       <div className="home-head">
         <div className="home-pattern" aria-hidden="true" />
+        <div className="home-brand">
+          <div className="logo-pill"><Marque compact /></div>
+          <button type="button" className="home-ico" aria-label="Notifications"><LuBell /><span className="home-dot" /></button>
+          <button type="button" className="home-ico" aria-label="Se déconnecter" onClick={onLogout}><LuLogOut /></button>
+        </div>
         <div className="home-top">
           <div className="home-avatar" aria-hidden="true">{USAGER.prenom[0]}</div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <span className="home-hello">{salut},</span>
             <strong className="home-name">{USAGER.prenom}</strong>
           </div>
-          <button type="button" className="home-ico" aria-label="Notifications"><LuBell /><span className="home-dot" /></button>
-          <button type="button" className="home-ico" aria-label="Se déconnecter" onClick={onLogout}><LuLogOut /></button>
         </div>
         <p className="home-sub">{VEHICULES_USAGER.length} véhicules · cartes grises à jour</p>
       </div>

@@ -195,47 +195,75 @@ function Connexion({ onOk }: { onOk: () => void }) {
   );
 }
 
-/** Carte au format ID-1, recto : véhicule ; verso : QR code. */
+/**
+ * Carte au format ID-1, recto : véhicule ; verso : QR code.
+ * Le retournement se fait en deux demi-tours (0° → 90°, changement de face, -90° → 0°) :
+ * une seule face est affichée à la fois, le texte n'apparaît donc jamais en miroir.
+ */
 function CarteNumerique({ v, flippable = false, retournee = false, onFlip }: { v: VehiculeDemo; flippable?: boolean; retournee?: boolean; onFlip?: () => void }) {
   const valide = v.statut === "valide";
-  const contenu = (
-    <span className="dcard-inner">
-      <span className="dcard-face dcard-front">
-        <span className="dcard-pattern" aria-hidden="true" />
-        <span className="dcard-sheen" aria-hidden="true" />
-        <span className="dcard-row">
-          <span className="dcard-brand">
-            <strong>Carte grise numérique</strong>
-            <span className="ar" lang="ar">البطاقة الرمادية</span>
-          </span>
-          <span className={`dcard-status ${valide ? "ok" : "ko"}`}>{valide ? <LuShieldCheck /> : <LuShieldAlert />}{valide ? "Valide" : "Signalé"}</span>
+  const [face, setFace] = useState(retournee);
+  const [stade, setStade] = useState<"repos" | "sortie" | "entree">("repos");
+
+  useEffect(() => {
+    if (retournee === face) return;
+    const reduit = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduit) { setFace(retournee); return; }
+    setStade("sortie");
+    const t = window.setTimeout(() => {
+      setFace(retournee);
+      setStade("entree");
+    }, 230);
+    return () => clearTimeout(t);
+  }, [retournee, face]);
+
+  useEffect(() => {
+    if (stade !== "entree") return;
+    let r2 = 0;
+    const r1 = requestAnimationFrame(() => { r2 = requestAnimationFrame(() => setStade("repos")); });
+    return () => { cancelAnimationFrame(r1); cancelAnimationFrame(r2); };
+  }, [stade]);
+
+  const recto = (
+    <span className="dcard-face dcard-front">
+      <span className="dcard-pattern" aria-hidden="true" />
+      <span className="dcard-sheen" aria-hidden="true" />
+      <span className="dcard-row">
+        <span className="dcard-brand">
+          <strong>Carte grise numérique</strong>
+          <span className="ar" lang="ar">البطاقة الرمادية</span>
         </span>
-        <span className="dcard-plate"><PlaqueMaroc plaque={v.plaque} /></span>
-        <span className="dcard-row dcard-bottom">
-          <span>
-            <span className="dcard-label">Véhicule</span>
-            <span className="dcard-val">{v.marque} {v.modele}</span>
-          </span>
-          <span style={{ textAlign: "right" }}>
-            <span className="dcard-label">N° de titre</span>
-            <span className="dcard-val mono">{v.numeroTitre}</span>
-          </span>
-        </span>
+        <span className={`dcard-status ${valide ? "ok" : "ko"}`}>{valide ? <LuShieldCheck /> : <LuShieldAlert />}{valide ? "Valide" : "Signalé"}</span>
       </span>
-      <span className="dcard-face dcard-back">
-        <span className="dcard-qr"><QrCode id={v.qrId} /></span>
-        <span className="dcard-back-txt">
-          <strong>{v.titulaire}</strong>
-          <span>Présentez ce QR code à l’agent</span>
+      <span className="dcard-plate"><PlaqueMaroc plaque={v.plaque} /></span>
+      <span className="dcard-row dcard-bottom">
+        <span>
+          <span className="dcard-label">Véhicule</span>
+          <span className="dcard-val">{v.marque} {v.modele}</span>
+        </span>
+        <span style={{ textAlign: "right" }}>
+          <span className="dcard-label">N° de titre</span>
+          <span className="dcard-val mono">{v.numeroTitre}</span>
         </span>
       </span>
     </span>
   );
+  const verso = (
+    <span className="dcard-face dcard-back">
+      <span className="dcard-qr"><QrCode id={v.qrId} /></span>
+      <span className="dcard-back-txt">
+        <strong>{v.titulaire}</strong>
+        <span>Présentez ce QR code à l’agent</span>
+      </span>
+    </span>
+  );
+  const contenu = <span className={`dcard-inner stade-${stade}`}>{face ? verso : recto}</span>;
+
   if (flippable) {
     return (
       <button
         type="button"
-        className={`dcard flippable ${retournee ? "flipped" : ""}`}
+        className="dcard flippable"
         onClick={onFlip}
         aria-label={retournee ? "Afficher le recto de la carte" : "Retourner la carte pour afficher le QR code"}
       >

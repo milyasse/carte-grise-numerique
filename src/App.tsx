@@ -75,7 +75,7 @@ export default function App() {
               <LogoNarsa size={40} variant="light" />
               <div className="brand-text">
                 <strong>Carte grise numérique</strong>
-                <span style={{ color: "#a8c7bb" }}>Porteur : NARSA · Transformation numérique de l’administration</span>
+                <span style={{ color: "#a9c3df" }}>Porteur : NARSA · Transformation numérique de l’administration</span>
               </div>
             </div>
             <span className="small">Prototype réalisé dans le cadre d’une formation en conduite du changement.</span>

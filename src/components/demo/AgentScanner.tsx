@@ -86,11 +86,11 @@ export function AgentScanner({ initialScenario = "valide", final = false }: { in
 
         <div style={{ display: "grid", gap: 16, alignContent: "start", minWidth: 0 }}>
           <div className="btn-row">
-            <button className="btn" type="button" style={{ background: "#6fd3ad", color: "var(--c-primary-strong)" }} onClick={() => lancer(QR_MATRICES[scenario].payload)} disabled={enCours}>
+            <button className="btn" type="button" style={{ background: "var(--c-gold)", color: "#1b2a3a" }} onClick={() => lancer(QR_MATRICES[scenario].payload)} disabled={enCours}>
               <LuPlay /> Scanner le QR présenté
             </button>
             {(resultat || enCours) && (
-              <button className="btn ghost" type="button" style={{ color: "#cfe6dc", borderColor: "#2d5a4a" }} onClick={reset}>
+              <button className="btn ghost" type="button" style={{ color: "#d6e6f5", borderColor: "#2d5f95" }} onClick={reset}>
                 <LuRotateCcw /> Réinitialiser
               </button>
             )}
@@ -117,7 +117,7 @@ export function AgentScanner({ initialScenario = "valide", final = false }: { in
             className="manual"
             onSubmit={(e) => { e.preventDefault(); if (manuel.trim()) lancer(manuel); }}
           >
-            <label htmlFor="qr-manuel" className="small" style={{ flexBasis: "100%", color: "#cfe6dc" }}>
+            <label htmlFor="qr-manuel" className="small" style={{ flexBasis: "100%", color: "#d6e6f5" }}>
               Tester le contenu d’un QR code (exemple : CGN-DEMO:12345-A-6)
             </label>
             <input id="qr-manuel" className="input mono" value={manuel} onChange={(e) => setManuel(e.target.value)} placeholder="CGN-DEMO:…" autoComplete="off" />
@@ -131,8 +131,8 @@ export function AgentScanner({ initialScenario = "valide", final = false }: { in
 }
 
 const LIBELLES_FINAL: Record<ScenarioId, string> = {
-  valide: "12345 | أ | 6",
-  signale: "67890 | ب | 1",
+  valide: "12345 | أ\u200E | 6",
+  signale: "67890 | ب\u200E | 1",
   invalide: "QR non reconnu",
 };
 

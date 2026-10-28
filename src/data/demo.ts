@@ -22,7 +22,7 @@ export const lettreCode = (ar: string) => LETTRES_PLAQUE.find((l) => l.ar === ar
 /** Clé technique, ex. 12345-A-6 */
 export const cleePlaque = (p: Plaque) => `${p.numero}-${lettreCode(p.lettre)}-${p.region}`;
 /** Affichage, ex. 12345 | أ | 6 */
-export const textePlaque = (p: Plaque) => `${p.numero} | ${p.lettre} | ${p.region}`;
+export const textePlaque = (p: Plaque) => `${p.numero} | ${p.lettre}\u200E | ${p.region}`;
 
 export interface VehiculeDemo {
   immatriculation: string; // clé technique

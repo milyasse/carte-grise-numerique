@@ -17,9 +17,9 @@ Prototype réalisé dans le cadre d’une formation en conduite du changement.
 
 | Scénario | Contenu du QR | Résultat |
 |---|---|---|
-| QR reconnu | `CGN-DEMO:DEMO-12345` | Vérification simulée réussie |
-| Document signalé | `CGN-DEMO:DEMO-67890` | Titre signalé dans le jeu fictif |
-| QR invalide | `CGN-DEMO:XX-00000` | Vérification simulée échouée |
+| QR reconnu | `CGN-DEMO:12345-A-6` | Vérification simulée réussie |
+| Document signalé | `CGN-DEMO:67890-B-1` | Titre signalé dans le jeu fictif |
+| QR invalide | `CGN-DEMO:00000-Z-99` | Vérification simulée échouée |
 
 Le champ « Tester le contenu d’un QR code » du mode agent accepte n’importe quel texte.
 
@@ -68,8 +68,10 @@ l’espace usager et le pied de page.
 
 ### QR codes
 
+Les plaques suivent le format marocain : numéro (1 à 5 chiffres) | lettre arabe | code région (1 à 89). Dans le QR code, la lettre est codée en latin (أ = A, ب = B…).
+
 Les matrices de `src/data/qr.ts` ont été générées hors ligne et vérifiées par décodage.
-Pour ajouter un QR code, générez une matrice (1 = module noir) pour un contenu `CGN-DEMO:<immatriculation>`.
+Pour ajouter un QR code, générez une matrice (1 = module noir) pour un contenu `CGN-DEMO:<numéro>-<lettre latine>-<région>`.
 
 ## Évolution vers un service réel
 

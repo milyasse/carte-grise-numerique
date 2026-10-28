@@ -416,3 +416,23 @@ table.rtable { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+/* Plaque marocaine */
+.plaque-ma {
+  display: inline-flex; align-items: stretch; justify-content: center; align-self: center; justify-self: center;
+  background: #fff; color: #111; border: 2.5px solid #111; border-radius: 7px;
+  font-family: var(--f-mono); font-weight: 600; letter-spacing: 0.04em; line-height: 1;
+}
+.plaque-ma.md { font-size: 1.35rem; }
+.plaque-ma.sm { font-size: 0.85rem; border-width: 1.5px; border-radius: 5px; }
+.plaque-ma > span:not(.pm-sep) { padding: 8px 12px; display: grid; place-items: center; }
+.plaque-ma.sm > span:not(.pm-sep) { padding: 3px 7px; }
+.plaque-ma .pm-lettre { font-family: var(--f-display); font-size: 1.15em; }
+.plaque-ma .pm-sep, .plaque-input .pm-sep { width: 2px; background: #111; align-self: stretch; }
+.plaque-ma.sm .pm-sep { width: 1.5px; }
+.plaque-input { display: grid; grid-template-columns: minmax(0, 2.2fr) 2px minmax(64px, 1fr) 2px minmax(0, 1fr); gap: 8px; align-items: center; max-width: 360px; }
+.plaque-input .pm-sep { background: var(--c-line); height: 28px; }
+.plaque-input .select { font-family: var(--f-display); font-size: 1.1rem; text-align: center; }
+.plaque-input .input { text-align: center; }
+.chip .plaque-ma { border: 0; background: transparent; color: inherit; }
+.chip .plaque-ma .pm-sep { background: currentColor; opacity: .5; }

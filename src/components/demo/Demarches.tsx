@@ -3,7 +3,8 @@ import {
   LuArrowRightLeft, LuCheck, LuCircleCheck, LuClock, LuCopy, LuFilePlus, LuIdCard, LuInfo,
   LuListChecks, LuLoaderCircle, LuPaperclip, LuRotateCcw, LuSearch, LuStepForward,
 } from "react-icons/lu";
-import { VEHICULES_DEMO, findVehicule } from "../../data/demo";
+import { VEHICULES_DEMO, cleePlaque, findVehicule, textePlaque, type Plaque } from "../../data/demo";
+import { PlaqueInput, PlaqueMaroc } from "../PlaqueMaroc";
 import { useLocalState } from "../../hooks/useLocalState";
 
 export type TypeDemande = "Duplicata" | "Mutation";
@@ -27,7 +28,7 @@ export const ETAPES_SUIVI = [
 ];
 
 const EXEMPLE: Dossier = {
-  ref: "DUP-2026-0042", type: "Duplicata", immatriculation: "DEMO-12345", detail: "Perte",
+  ref: "DUP-2026-0042", type: "Duplicata", immatriculation: "12345 | أ | 6", detail: "Perte",
   cree: "27/10/2026", etape: 1, piecesTransmises: false, exemple: true,
 };
 
@@ -35,7 +36,7 @@ type Vue = "carte" | "duplicata" | "mutation" | "suivi";
 
 export function Demarches({ connecte, onVoirCarte }: { connecte: boolean; onVoirCarte: () => void }) {
   const [vue, setVue] = useState<Vue>("duplicata");
-  const [dossiers, setDossiers] = useLocalState<Dossier[]>("cgn-demo-dossiers", [EXEMPLE]);
+  const [dossiers, setDossiers] = useLocalState<Dossier[]>("cgn-demo-dossiers-v2", [EXEMPLE]);
   const [selection, setSelection] = useState<string>(EXEMPLE.ref);
 
   const creer = (type: TypeDemande, immatriculation: string, detail: string) => {
@@ -101,8 +102,8 @@ function MaCarte({ onVoirCarte }: { onVoirCarte: () => void }) {
       {VEHICULES_DEMO.map((v) => (
         <div key={v.immatriculation} className="dossier-item" style={{ cursor: "default" }}>
           <span>
-            <strong className="mono">{v.immatriculation}</strong>
-            <span className="small muted" style={{ display: "block" }}>{v.marque} · {v.modele}</span>
+            <PlaqueMaroc plaque={v.plaque} size="sm" />
+            <span className="small muted" style={{ display: "block", marginTop: 4 }}>{v.marque} · {v.modele}</span>
           </span>
           {v.statut === "valide" ? <span className="badge">Exemple fictif</span> : <span className="badge amber">Signalé (scénario)</span>}
         </div>
@@ -135,17 +136,18 @@ function Confirmation({ refDossier, onSuivi, onNouveau }: { refDossier: string; 
   );
 }
 
-const IMMAT_RE = /^DEMO-\d{5}$/;
-function validerImmat(v: string) {
-  const s = v.trim().toUpperCase();
-  if (!s) return "Indiquez l’immatriculation de démonstration.";
-  if (!IMMAT_RE.test(s)) return "Format attendu : DEMO-12345.";
-  if (!findVehicule(s)) return "Immatriculation absente du jeu fictif. Utilisez DEMO-12345 ou DEMO-67890.";
+const PLAQUE_INITIALE: Plaque = { numero: "12345", lettre: "أ", region: "6" };
+function validerImmat(p: Plaque) {
+  if (!p.numero) return "Indiquez le numéro de la plaque.";
+  if (!/^\d{1,5}$/.test(p.numero)) return "Le numéro comporte 1 à 5 chiffres.";
+  const r = Number(p.region);
+  if (!p.region || r < 1 || r > 89) return "Le code région est compris entre 1 et 89.";
+  if (!findVehicule(cleePlaque(p))) return "Plaque absente du jeu fictif. Utilisez 12345 | أ | 6 ou 67890 | ب | 1.";
   return "";
 }
 
 function FormDuplicata({ onCree, onSuivi }: { onCree: (immat: string, detail: string) => string; onSuivi: (r: string) => void }) {
-  const [immat, setImmat] = useState("DEMO-12345");
+  const [immat, setImmat] = useState<Plaque>(PLAQUE_INITIALE);
   const [motif, setMotif] = useState("");
   const [ok, setOk] = useState(false);
   const [erreurs, setErreurs] = useState<Record<string, string>>({});
@@ -159,7 +161,7 @@ function FormDuplicata({ onCree, onSuivi }: { onCree: (immat: string, detail: st
     if (!ok) er.ok = "Cochez la case pour confirmer qu’il s’agit d’une démonstration.";
     setErreurs(er);
     if (Object.keys(er).length) return;
-    s.soumettre(() => onCree(immat.trim().toUpperCase(), motif));
+    s.soumettre(() => onCree(textePlaque(immat), motif));
   };
 
   if (s.etat === "ok") return <Confirmation refDossier={s.ref} onSuivi={onSuivi} onNouveau={() => { s.reset(); setMotif(""); setOk(false); }} />;
@@ -168,7 +170,8 @@ function FormDuplicata({ onCree, onSuivi }: { onCree: (immat: string, detail: st
     <form className="form" onSubmit={submit} noValidate>
       <div className="field">
         <label htmlFor="dup-immat">Immatriculation</label>
-        <input id="dup-immat" className="input mono" value={immat} onChange={(e) => setImmat(e.target.value)} aria-invalid={!!erreurs.immat} aria-describedby="dup-immat-err" autoComplete="off" />
+        <PlaqueInput id="dup-immat" value={immat} onChange={setImmat} invalid={!!erreurs.immat} />
+        <span className="hint">Numéro · lettre · code région</span>
         {erreurs.immat && <span className="error-text" id="dup-immat-err">{erreurs.immat}</span>}
       </div>
       <div className="field">
@@ -193,7 +196,7 @@ function FormDuplicata({ onCree, onSuivi }: { onCree: (immat: string, detail: st
 }
 
 function FormMutation({ onCree, onSuivi }: { onCree: (immat: string, detail: string) => string; onSuivi: (r: string) => void }) {
-  const [immat, setImmat] = useState("DEMO-12345");
+  const [immat, setImmat] = useState<Plaque>(PLAQUE_INITIALE);
   const [nom, setNom] = useState("");
   const [type, setType] = useState("");
   const [date, setDate] = useState("");
@@ -214,7 +217,7 @@ function FormMutation({ onCree, onSuivi }: { onCree: (immat: string, detail: str
     if (!ok) er.ok = "Cochez la case pour confirmer qu’il s’agit d’une démonstration.";
     setErreurs(er);
     if (Object.keys(er).length) return;
-    s.soumettre(() => onCree(immat.trim().toUpperCase(), `${type} · nouveau titulaire : ${nom.trim()}`));
+    s.soumettre(() => onCree(textePlaque(immat), `${type} · nouveau titulaire : ${nom.trim()}`));
   };
 
   if (s.etat === "ok") return <Confirmation refDossier={s.ref} onSuivi={onSuivi} onNouveau={() => { s.reset(); setNom(""); setType(""); setDate(""); setOk(false); }} />;
@@ -223,7 +226,8 @@ function FormMutation({ onCree, onSuivi }: { onCree: (immat: string, detail: str
     <form className="form" onSubmit={submit} noValidate>
       <div className="field">
         <label htmlFor="mut-immat">Immatriculation</label>
-        <input id="mut-immat" className="input mono" value={immat} onChange={(e) => setImmat(e.target.value)} aria-invalid={!!erreurs.immat} autoComplete="off" />
+        <PlaqueInput id="mut-immat" value={immat} onChange={setImmat} invalid={!!erreurs.immat} />
+        <span className="hint">Numéro · lettre · code région</span>
         {erreurs.immat && <span className="error-text">{erreurs.immat}</span>}
       </div>
       <div className="field">

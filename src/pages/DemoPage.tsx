@@ -5,6 +5,7 @@ import { AgentScanner } from "../components/demo/AgentScanner";
 import { AuthFlow } from "../components/demo/AuthFlow";
 import { Demarches } from "../components/demo/Demarches";
 import { PhoneFrame } from "../components/PhoneFrame";
+import { PlaqueMaroc } from "../components/PlaqueMaroc";
 import { SectionHead } from "../components/SectionHead";
 import { VEHICULES_DEMO, type ScenarioId } from "../data/demo";
 import { verificationService } from "../services/verification";
@@ -61,8 +62,8 @@ export function DemoPage() {
             <div className="phone-col" ref={phoneRef} style={{ display: "grid", gap: 12, justifyItems: "center" }}>
               <div className="chip-row" role="group" aria-label="Véhicule affiché">
                 {VEHICULES_DEMO.map((x, i) => (
-                  <button key={x.immatriculation} type="button" className="chip mono" aria-pressed={i === vIdx} onClick={() => { setVIdx(i); setVerif(""); }}>
-                    {x.immatriculation}
+                  <button key={x.immatriculation} type="button" className="chip" aria-pressed={i === vIdx} onClick={() => { setVIdx(i); setVerif(""); }}>
+                    <PlaqueMaroc plaque={x.plaque} size="sm" />
                   </button>
                 ))}
               </div>

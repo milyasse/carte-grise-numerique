@@ -4,6 +4,7 @@ import { QR_MATRICES } from "../../data/qr";
 import { SCENARIOS, type ScenarioId } from "../../data/demo";
 import { verificationService, type ResultatVerification } from "../../services/verification";
 import { QrCode } from "../QrCode";
+import { PlaqueMaroc } from "../PlaqueMaroc";
 
 const ETAPES = [
   "Lecture du QR code présenté",
@@ -109,7 +110,7 @@ export function AgentScanner({ initialScenario = "valide" }: { initialScenario?:
             onSubmit={(e) => { e.preventDefault(); if (manuel.trim()) lancer(manuel); }}
           >
             <label htmlFor="qr-manuel" className="small" style={{ flexBasis: "100%", color: "#cfe6dc" }}>
-              Tester le contenu d’un QR code (exemple : CGN-DEMO:DEMO-12345)
+              Tester le contenu d’un QR code (exemple : CGN-DEMO:12345-A-6)
             </label>
             <input id="qr-manuel" className="input mono" value={manuel} onChange={(e) => setManuel(e.target.value)} placeholder="CGN-DEMO:…" autoComplete="off" />
             <button className="btn secondary sm" type="submit" disabled={enCours || !manuel.trim()}>Tester</button>
@@ -127,7 +128,7 @@ function Resultat({ r }: { r: ResultatVerification }) {
       <div className="result ok fade-in" role="status">
         <div className="result-head"><LuCircleCheck /><div><strong>Vérification simulée réussie</strong><p className="small muted">Identifiant de démonstration reconnu, informations cohérentes avec le scénario de test.</p></div></div>
         <dl className="kv">
-          <dt>Immatriculation</dt><dd className="mono">{v.immatriculation}</dd>
+          <dt>Immatriculation</dt><dd><PlaqueMaroc plaque={v.plaque} size="sm" /></dd>
           <dt>Véhicule</dt><dd>{v.marque} · {v.modele}</dd>
           <dt>Type · énergie</dt><dd>{v.genre} · {v.energie}</dd>
           <dt>N° de titre</dt><dd className="mono">{v.numeroTitre}</dd>
@@ -142,7 +143,7 @@ function Resultat({ r }: { r: ResultatVerification }) {
       <div className="result flag fade-in" role="status">
         <div className="result-head"><LuTriangleAlert /><div><strong>Document signalé comme invalide</strong><p className="small muted">{r.motif}</p></div></div>
         <dl className="kv">
-          <dt>Immatriculation</dt><dd className="mono">{v.immatriculation}</dd>
+          <dt>Immatriculation</dt><dd><PlaqueMaroc plaque={v.plaque} size="sm" /></dd>
           <dt>N° de titre</dt><dd className="mono">{v.numeroTitre}</dd>
         </dl>
         <p className="small">Conduite à tenir dans le scénario : appliquer la procédure prévue et orienter vers le service compétent.</p>

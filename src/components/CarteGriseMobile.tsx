@@ -1,6 +1,7 @@
 import { LuBadgeCheck, LuScanLine, LuShieldCheck } from "react-icons/lu";
 import type { VehiculeDemo } from "../data/demo";
 import { QrCode } from "./QrCode";
+import { PlaqueMaroc } from "./PlaqueMaroc";
 
 interface Props {
   vehicule: VehiculeDemo;
@@ -21,7 +22,7 @@ export function CarteGriseMobile({ vehicule, qrId, onVerifier, onControle, verif
         <span className="ar" lang="ar">البطاقة الرمادية الرقمية</span>
       </div>
       <div className="cg-body">
-        <div className="plate" aria-label={`Immatriculation ${vehicule.immatriculation}`}>{vehicule.immatriculation}</div>
+        <PlaqueMaroc plaque={vehicule.plaque} />
 
         <div className="cg-block">
           <h4>Véhicule</h4>
